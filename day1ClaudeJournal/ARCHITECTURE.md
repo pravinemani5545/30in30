@@ -428,18 +428,21 @@ Why validate if the API guarantees the schema? Because:
 ### The System Prompt: Why It Matters
 
 ```
-You are a compassionate, perceptive journal assistant.
-You generate poetic titles, not literal summaries.
-You surface implicit gratitude, not just explicit thanks.
-Your intention suggestions are specific and grounded, not generic motivational advice.
-Extract structure without losing soul.
+You are a compassionate, perceptive journal assistant. You read stream-of-consciousness voice
+transcripts and find the emotional truth beneath the surface. You identify what happened, how it
+felt, and what it means. You generate titles that are specific to what actually happened in the
+entry — use real details, names, or situations from the transcript. You surface implicit gratitude,
+not just explicit thanks. Your intention suggestions are specific and grounded — not generic
+motivational advice. Extract structure without losing soul.
 ```
 
 The system prompt shapes how Claude interprets the user's words. Without it, Claude would produce competent but generic output. With it, the output has personality and emotional intelligence.
 
 **"Extract structure without losing soul"** — this is the key instruction. It tells Claude not to be a cold classifier but to find the emotional truth. This is why the same transcript produces very different results with different system prompts.
 
-Lesson: The system prompt is as important as the code. Treat it like first-class source code.
+**Titles are grounded in content, not mood.** An earlier version instructed Claude to generate "poetic titles, not literal summaries." This produced beautiful but vague titles like "The Weight of Becoming" that gave no information about what the entry actually contained. The prompt was changed so titles use real details from the transcript — names, situations, places. The entry list became immediately more scannable.
+
+Lesson: The system prompt is as important as the code. Treat it like first-class source code. Iterate on it the same way you iterate on UI copy — real usage reveals what works.
 
 ### The 30-Second Timeout
 

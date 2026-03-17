@@ -181,3 +181,93 @@ Full production checklist beyond env vars:
 | `README.md` | Full rewrite replacing create-next-app boilerplate |
 | `package.json` | Added `engines: node 22.x` |
 | `30in30/.gitignore` | Created, excludes `.DS_Store` |
+
+---
+
+---
+
+# Session Notes — Day 1 ClaudeJournal (Session 3)
+
+Date: 2026-03-17
+
+---
+
+## What Was Done This Session
+
+### 1. Production Deployment Guide
+
+Wrote a full step-by-step production deployment guide for a **single Supabase database** setup (same DB for local dev and production). Key details:
+
+- Vercel: Root Directory must be set to `day1ClaudeJournal` — Vercel does not auto-detect the correct subdirectory in a monorepo
+- Supabase Auth → URL Configuration: Must add **both** localhost and production URLs to Redirect URLs. Site URL should be set to the production domain. Without this, OAuth and magic link redirects land on localhost instead of the live app.
+- Google Cloud Console: Authorized JavaScript Origins needs the production domain added. The Supabase callback URI (`https://[ref].supabase.co/auth/v1/callback`) was already present from local setup.
+- Single-DB implication: local dev and production share data. Acceptable for MVP; separate Supabase projects are the right solution when data cleanliness matters.
+
+Clarified that `https://your-app.vercel.app/auth/callback` is a template — replace `your-app` with the actual Vercel-assigned project name.
+
+---
+
+### 2. Day 2–7 Project Scaffolding
+
+Created placeholder directories under `30in30/` for the next 6 apps in the series:
+
+| Directory | App |
+|---|---|
+| `day2founderCrm/` | FounderCRM |
+| `day3tweetCraft/` | TweetCraft |
+| `day4hackerNewsDigest/` | HackerNews Digest |
+| `day5pitchDoctor/` | PitchDoctor |
+| `day6competitorRadar/` | CompetitorRadar |
+| `day7voiceNoteToBlog/` | VoiceNote to Blog |
+
+Each contains a minimal `README.md` placeholder. These directories allow the monorepo structure to be established before each app is built.
+
+---
+
+### 3. Root README Updated
+
+Replaced the bare `# 30in30` root README with a full app tracker table listing day 1 (done) through day 7 (upcoming), with links to each subdirectory and one-line descriptions.
+
+---
+
+### 4. Day 1 README — Major Expansion
+
+Rewrote `day1ClaudeJournal/README.md` from a standard setup doc to a comprehensive project reference:
+
+- Added architecture diagram (browser → server → external services)
+- Added full database schema tables for `profiles` and `journal_entries`
+- Added complete project directory tree with annotations on every folder
+- Added Claude API integration notes (Structured Outputs constraints, model, beta header)
+- Added "Known limitations" section
+- Fixed footer link from `github.com/pravinemani` (profile) to `github.com/pravinemani5545/30in30` (actual repo)
+
+---
+
+### 5. ARCHITECTURE.md — System Prompt Section Updated
+
+The system prompt example in section 6 still reflected the old "poetic titles" instruction. Updated to match the current prompt (content-specific titles using real details from the transcript) and added an explanation of why the change was made and what it taught about treating system prompts as first-class source code.
+
+---
+
+### 6. Pushed to GitHub
+
+Commit: `docs: add day2-7 project scaffolding and expand day1 README`
+Branch: `main`
+Repo: `https://github.com/pravinemani5545/30in30`
+
+---
+
+## Files Changed This Session
+
+| File | Change |
+|---|---|
+| `30in30/README.md` | Replaced bare placeholder with full app tracker table (day 1–7) |
+| `day1ClaudeJournal/README.md` | Major expansion: schema tables, architecture diagram, directory tree, Claude API notes |
+| `day1ClaudeJournal/ARCHITECTURE.md` | Updated system prompt example + added "titles are grounded in content" explanation |
+| `day1ClaudeJournal/SESSION_NOTES.md` | Added Session 3 notes (this file) |
+| `day2founderCrm/README.md` | Created — placeholder |
+| `day3tweetCraft/README.md` | Created — placeholder |
+| `day4hackerNewsDigest/README.md` | Created — placeholder |
+| `day5pitchDoctor/README.md` | Created — placeholder |
+| `day6competitorRadar/README.md` | Created — placeholder |
+| `day7voiceNoteToBlog/README.md` | Created — placeholder |
