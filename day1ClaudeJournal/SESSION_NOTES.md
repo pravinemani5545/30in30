@@ -271,3 +271,63 @@ Repo: `https://github.com/pravinemani5545/30in30`
 | `day5pitchDoctor/README.md` | Created — placeholder |
 | `day6competitorRadar/README.md` | Created — placeholder |
 | `day7voiceNoteToBlog/README.md` | Created — placeholder |
+
+---
+
+---
+
+# Session Notes — Day 1 ClaudeJournal (Session 4)
+
+Date: 2026-03-18
+
+---
+
+## What Was Done This Session
+
+### 1. Production Login Issue — Error 403: disallowed_useragent
+
+**Symptom:** After fixing the Testing mode block, Google OAuth returned `Error 403: disallowed_useragent`.
+
+**Root cause:** This error fires when Google's OAuth flow is triggered from a disallowed browser context — most commonly an in-app browser (Slack, iMessage, email client, etc.) or a WebView. Google does not allow OAuth in embedded browsers.
+
+**Fix options:**
+1. Open the app directly in Chrome or Safari — not via a link inside another app
+2. If the OAuth consent screen was still in "Testing" mode: either publish the app (no Google review required for email + profile scopes) or add the user's email as a test user under Google Cloud Console → APIs & Services → OAuth consent screen → Test users
+
+**Key lesson:** `disallowed_useragent` is a client-side browser context error, not a server configuration error. Always test OAuth flows from a real browser tab, not a link opened inside another app.
+
+---
+
+### 2. Production Login Issue — Redirects Back to Home Screen After Google Auth
+
+**Symptom:** Google OAuth completes successfully but user lands back on the home/landing page (`/`) instead of `/journal`.
+
+**Diagnosis approach — read the URL on landing:**
+
+| URL after redirect | Cause |
+|---|---|
+| `https://app.vercel.app/` | Supabase redirected to Site URL — production callback URL missing from Redirect URLs list |
+| `https://app.vercel.app/login?error=auth_callback_failed` | Reached callback but `exchangeCodeForSession` failed (PKCE mismatch) |
+| `http://localhost:3000/...` | Supabase Site URL still set to localhost |
+
+**Most likely root cause:** The production redirect URL was not added to Supabase's allowed Redirect URLs list, causing Supabase to fall back to the Site URL (`/`).
+
+**Code confirmed correct:**
+- `signInWithOAuth` uses `redirectTo: \`${window.location.origin}/auth/callback\`` — dynamically picks up the production domain, no hardcoded localhost
+- Auth callback uses `origin` from the request URL — not hardcoded
+- Failure path correctly redirects to `/login?error=auth_callback_failed`, not `/`
+
+**Fix checklist — Supabase → Authentication → URL Configuration:**
+1. **Site URL** = `https://your-app.vercel.app` (not localhost)
+2. **Redirect URLs** must contain the exact string `https://your-app.vercel.app/auth/callback`
+   - No trailing slash
+   - Must include `/auth/` — the route is `/auth/callback` not `/callback`
+   - Keep `http://localhost:3000/auth/callback` alongside it for local dev
+
+**Status:** Awaiting confirmation of which URL the user lands on to confirm root cause.
+
+---
+
+## Files Changed This Session
+
+None — session was production debugging and documentation only.
