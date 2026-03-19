@@ -98,6 +98,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
+                  suppressHydrationWarning
                   style={{
                     width: "100%",
                     padding: "10px 12px",
@@ -115,6 +116,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
+                suppressHydrationWarning
                 style={{
                   width: "100%",
                   padding: "10px 16px",

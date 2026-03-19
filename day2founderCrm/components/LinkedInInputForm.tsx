@@ -19,6 +19,7 @@ export function LinkedInInputForm({ onEnrichmentComplete }: LinkedInInputFormPro
 
   const {
     enrich,
+    triggerManualPaste,
     phase,
     showManualPaste,
     pendingUrl,
@@ -77,7 +78,7 @@ export function LinkedInInputForm({ onEnrichmentComplete }: LinkedInInputFormPro
   return (
     <div>
       {/* Main URL input */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} suppressHydrationWarning>
         <div
           className="linkedin-input-wrapper relative"
           style={{
@@ -99,6 +100,7 @@ export function LinkedInInputForm({ onEnrichmentComplete }: LinkedInInputFormPro
             onBlur={() => validateUrl(url)}
             placeholder="Paste a LinkedIn profile URL..."
             disabled={isLoading}
+            suppressHydrationWarning
             style={{
               flex: 1,
               padding: "14px 16px",
@@ -150,6 +152,37 @@ export function LinkedInInputForm({ onEnrichmentComplete }: LinkedInInputFormPro
       {urlError && (
         <p style={{ color: "var(--error)", fontSize: "12px", marginTop: "6px" }}>
           {urlError}
+        </p>
+      )}
+
+      {/* Skip Apollo shortcut */}
+      {!showManualPaste && !isLoading && (
+        <p style={{ fontSize: "12px", marginTop: "6px" }}>
+          <button
+            type="button"
+            onClick={() => {
+              const trimmed = url.trim();
+              const pattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[^/?#]+\/?$/;
+              if (trimmed && pattern.test(trimmed)) {
+                triggerManualPaste(trimmed);
+              } else if (trimmed) {
+                setUrlError("Must be a LinkedIn profile URL (linkedin.com/in/username)");
+              } else {
+                setUrlError("Paste a LinkedIn URL first, then click this to skip Apollo");
+              }
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "var(--text-tertiary)",
+              cursor: "pointer",
+              fontSize: "12px",
+              textDecoration: "underline",
+            }}
+          >
+            Paste LinkedIn text manually instead
+          </button>
         </p>
       )}
 
@@ -230,6 +263,11 @@ export function LinkedInInputForm({ onEnrichmentComplete }: LinkedInInputFormPro
             {manualText.trim().length > 0 && manualText.trim().length < 50 && (
               <p style={{ color: "var(--text-tertiary)", fontSize: "11px", marginTop: "4px" }}>
                 Paste at least 50 characters of profile text
+              </p>
+            )}
+            {manualText.trim().length > 0 && (
+              <p style={{ color: manualText.trim().length > 23000 ? "var(--error)" : "var(--text-tertiary)", fontSize: "11px", marginTop: "4px" }}>
+                {manualText.trim().length.toLocaleString()} / 25,000 characters
               </p>
             )}
           </form>

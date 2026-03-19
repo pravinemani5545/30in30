@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60; // seconds — needed for Claude structured output on Vercel
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { EnrichRequestSchema, extractLinkedInUsername } from "@/lib/validations/enrich";
 import { enrichProfile } from "@/lib/enrichment/provider";
@@ -102,7 +104,8 @@ export async function POST(request: NextRequest) {
         employmentHistory: [],
         skills: [],
         education: [],
-        rawText: manualPasteText.slice(0, 10000),
+        // Trim to 12000 chars — captures all profile content; the rest is nav/footer noise
+        rawText: manualPasteText.slice(0, 12000),
       };
     } else {
       // Try Apollo / mock

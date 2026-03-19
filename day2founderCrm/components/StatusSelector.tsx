@@ -25,7 +25,7 @@ export function StatusSelector({ status, onChange, size = "md" }: StatusSelector
       onChange={(e) => onChange(e.target.value as ContactStatus)}
       style={{
         padding: isSmall ? "3px 8px" : "6px 10px",
-        background: current.bg,
+        backgroundColor: current.bg,
         border: `1px solid ${current.color}30`,
         borderRadius: "99px",
         color: current.color,

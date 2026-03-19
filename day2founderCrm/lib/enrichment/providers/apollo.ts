@@ -23,9 +23,14 @@ export async function fetchApolloProfile(
 ): Promise<RawProfileData | null> {
   const startedAt = Date.now();
 
+  // Normalize URL: ensure https://www.linkedin.com/in/username format
+  const normalizedUrl = linkedinUrl.startsWith("https://www.")
+    ? linkedinUrl
+    : linkedinUrl.replace("https://linkedin.com/", "https://www.linkedin.com/");
+
   const body = {
     api_key: apiKey,
-    linkedin_url: linkedinUrl,
+    linkedin_url: normalizedUrl,
     reveal_personal_emails: false,
     reveal_phone_number: false,
   };
@@ -38,6 +43,8 @@ export async function fetchApolloProfile(
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache",
+        // Pass key in header too — newer Apollo API prefers this
+        "X-Api-Key": apiKey,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15000),
@@ -56,7 +63,6 @@ export async function fetchApolloProfile(
   }
 
   if (res.status === 429) {
-    // Rate limited — retry once after 1s
     console.warn("[apollo] Rate limited (429), retrying in 1s");
     await new Promise((r) => setTimeout(r, 1000));
 
@@ -65,6 +71,7 @@ export async function fetchApolloProfile(
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache",
+        "X-Api-Key": apiKey,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15000),
@@ -77,14 +84,24 @@ export async function fetchApolloProfile(
     res = retry;
   }
 
-  if (res.status >= 500) {
-    console.error("[apollo] Server error:", res.status);
-    throw new Error(`Apollo server error: ${res.status}`);
-  }
-
+  // Log response body on any error for debugging
   if (!res.ok) {
-    console.error("[apollo] Unexpected status:", res.status);
-    throw new Error(`Apollo unexpected status: ${res.status}`);
+    let errorBody = "";
+    try {
+      errorBody = await res.text();
+    } catch {
+      errorBody = "(could not read body)";
+    }
+    console.error("[apollo] Error response:", { status: res.status, body: errorBody, duration });
+
+    if (res.status >= 500) {
+      throw new Error(`Apollo server error: ${res.status}`);
+    }
+
+    // 422 = unprocessable (bad URL format, no match, or validation error)
+    // 401/403 = auth issue
+    // In all non-5xx cases: fall through to manual paste
+    return null;
   }
 
   const data = await res.json() as { person?: Record<string, unknown> | null };

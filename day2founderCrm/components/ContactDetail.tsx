@@ -27,6 +27,10 @@ export function ContactDetail({
 
   async function handleStatusChange(newStatus: ContactStatus) {
     if (!contact) return;
+    const prevStatus = contact.status;
+
+    // Optimistic update so style changes immediately
+    onContactUpdate?.({ status: newStatus } as Partial<ContactWithSuggestions>);
     setStatusLoading(true);
 
     try {
@@ -36,7 +40,10 @@ export function ContactDetail({
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!res.ok) throw new Error("Failed to update status");
+      if (!res.ok) {
+        onContactUpdate?.({ status: prevStatus } as Partial<ContactWithSuggestions>);
+        throw new Error("Failed to update status");
+      }
 
       const data = await res.json() as { contact: ContactWithSuggestions };
       onContactUpdate?.(data.contact);

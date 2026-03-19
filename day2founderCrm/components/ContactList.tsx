@@ -24,11 +24,16 @@ export function ContactList({ activeContactId, onSelectContact, extraContacts = 
 
   const { contacts, loading } = useContacts({ status: activeTab });
 
-  // Merge extraContacts (just enriched) at the top
+  // extraContacts (recently enriched/updated) are the source of truth — they override
+  // stale API results for the same contact, and are filtered by active tab.
   const mergedContacts = (() => {
-    const allIds = new Set(contacts.map((c) => c.id));
-    const extras = extraContacts.filter((c) => !allIds.has(c.id));
-    return [...extras, ...contacts];
+    const extraIds = new Set(extraContacts.map((c) => c.id));
+    const apiOnly = contacts.filter((c) => !extraIds.has(c.id));
+    const filteredExtras = extraContacts.filter((c) => {
+      if (activeTab === "all") return true;
+      return c.status === activeTab;
+    });
+    return [...filteredExtras, ...apiOnly];
   })();
 
   return (

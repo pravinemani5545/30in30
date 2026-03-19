@@ -88,6 +88,11 @@ export function useEnrichment(options: UseEnrichmentOptions = {}) {
     }
   }
 
+  function triggerManualPaste(url: string) {
+    setPendingUrl(url);
+    setShowManualPaste(true);
+  }
+
   function dismissManualPaste() {
     setShowManualPaste(false);
     setPendingUrl(null);
@@ -96,6 +101,7 @@ export function useEnrichment(options: UseEnrichmentOptions = {}) {
 
   return {
     enrich,
+    triggerManualPaste,
     phase,
     showManualPaste,
     pendingUrl,

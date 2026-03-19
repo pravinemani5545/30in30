@@ -68,7 +68,7 @@ export async function enrichContact(
       },
     },
     {
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(60000),
     }
   );
 

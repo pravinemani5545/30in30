@@ -131,9 +131,23 @@ export default function DashboardPage() {
             contact={contact}
             loading={contactLoading}
             onBack={() => setShowMobileDetail(false)}
-            onContactUpdate={(updates) =>
-              setContact((prev) => (prev ? { ...prev, ...updates } : prev))
-            }
+            onContactUpdate={(updates) => {
+              setContact((prev) => (prev ? { ...prev, ...updates } : prev));
+              // Keep sidebar in sync: update recentContacts so extraContacts reflects changes
+              setRecentContacts((prev) => {
+                const exists = prev.find((c) => c.id === selectedId);
+                if (exists) {
+                  return prev.map((c) =>
+                    c.id === selectedId ? { ...c, ...(updates as Partial<Contact>) } : c
+                  );
+                }
+                // Not in recentContacts yet (loaded from API) — add it so sidebar updates
+                if (contact) {
+                  return [{ ...contact, ...(updates as Partial<Contact>) } as Contact, ...prev];
+                }
+                return prev;
+              });
+            }}
           />
         </main>
       </div>
