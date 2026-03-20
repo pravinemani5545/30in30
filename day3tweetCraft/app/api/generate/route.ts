@@ -6,32 +6,33 @@ import { generateTweets } from "@/lib/claude/generateTweets";
 import { createSupabaseServer, createSupabaseServiceRole } from "@/lib/supabase/server";
 import type { ParsedArticle, TweetVariation, GenerateResponse } from "@/types";
 import { getDomainFromUrl, getFaviconUrl } from "@/lib/utils";
+import { cleanPastedContent, countWords } from "@/lib/parser/clean";
 
 const RequestSchema = z.object({
   url: z.string(),
   pastedContent: z.string().max(50000).optional(),
 });
 
-function buildArticleFromPaste(url: string, content: string): ParsedArticle {
-  const trimmed = content.trim().slice(0, 15000);
+function buildArticleFromPaste(url: string, rawContent: string): ParsedArticle {
+  const content = cleanPastedContent(rawContent);
   const domain = getDomainFromUrl(url);
-  const wordCount = trimmed.split(/\s+/).filter((w) => w.length > 0).length;
+  const wordCount = countWords(content);
   // Use first non-empty line as title if it looks like one (< 120 chars)
-  const firstLine = trimmed.split("\n").find((l) => l.trim().length > 0) ?? "";
+  const firstLine = content.split("\n").find((l) => l.trim().length > 0) ?? "";
   const title = firstLine.length < 120 ? firstLine.trim() : domain;
   return {
     url,
     domain,
     faviconUrl: getFaviconUrl(url),
     title,
-    description: trimmed.slice(0, 300),
+    description: content.slice(0, 300).replace(/\n/g, " "),
     author: null,
     publishedAt: null,
     ogImageUrl: null,
-    mainContent: trimmed,
+    mainContent: content,
     wordCount,
     estimatedReadMinutes: Math.max(1, Math.round(wordCount / 200)),
-    contentQuality: "full",
+    contentQuality: content.length > 800 ? "full" : content.length > 200 ? "limited" : "og_only",
   };
 }
 
