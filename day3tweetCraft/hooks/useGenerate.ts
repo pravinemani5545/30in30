@@ -11,7 +11,7 @@ export function useGenerate() {
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const generate = useCallback(async (url: string) => {
+  const generate = useCallback(async (url: string, pastedContent?: string) => {
     setStep("fetching");
     setError(null);
     setResult(null);
@@ -24,7 +24,7 @@ export function useGenerate() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, ...(pastedContent ? { pastedContent } : {}) }),
       });
 
       const data = await res.json() as GenerateResponse | { error: string };
@@ -58,5 +58,7 @@ export function useGenerate() {
     setError(null);
   }, []);
 
-  return { step, result, error, generate, reset };
+  const fetchBlocked = error?.includes("login or block") ?? false;
+
+  return { step, result, error, generate, reset, fetchBlocked };
 }

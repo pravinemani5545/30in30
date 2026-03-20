@@ -11,14 +11,14 @@ import type { GenerateResponse } from "@/types";
 import { History } from "lucide-react";
 
 export function DashboardClient() {
-  const { step, result, error, generate, reset } = useGenerate();
+  const { step, result, error, generate, reset, fetchBlocked } = useGenerate();
   const [activeGenerationId, setActiveGenerationId] = useState<string | null>(null);
   const [historySheetOpen, setHistorySheetOpen] = useState(false);
 
   const handleGenerate = useCallback(
-    async (url: string) => {
+    async (url: string, pastedContent?: string) => {
       reset();
-      const data = await generate(url);
+      const data = await generate(url, pastedContent);
       if (data) {
         setActiveGenerationId(data.generationId);
       }
@@ -89,19 +89,24 @@ export function DashboardClient() {
           </div>
 
           {/* URL input */}
-          <UrlInputForm onSubmit={handleGenerate} step={step} />
+          <UrlInputForm onSubmit={handleGenerate} step={step} autoOpenPaste={fetchBlocked} />
 
           {/* Error message */}
           {step === "error" && error && (
             <div
-              className="rounded-xl border p-4 text-sm"
+              className="rounded-xl border p-4 text-sm space-y-1"
               style={{
                 background: "rgba(239,68,68,0.08)",
                 borderColor: "rgba(239,68,68,0.25)",
                 color: "var(--error)",
               }}
             >
-              {error}
+              <p>{error}</p>
+              {fetchBlocked && (
+                <p className="text-xs opacity-75">
+                  Some sites (Medium, Substack, paywalled content) block automated access. The paste area above lets you work around this.
+                </p>
+              )}
             </div>
           )}
 

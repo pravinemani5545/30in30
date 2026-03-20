@@ -7,7 +7,33 @@ import { createSupabaseServer, createSupabaseServiceRole } from "@/lib/supabase/
 import type { ParsedArticle, TweetVariation, GenerateResponse } from "@/types";
 import { getDomainFromUrl, getFaviconUrl } from "@/lib/utils";
 
-const RequestSchema = z.object({ url: z.string() });
+const RequestSchema = z.object({
+  url: z.string(),
+  pastedContent: z.string().max(50000).optional(),
+});
+
+function buildArticleFromPaste(url: string, content: string): ParsedArticle {
+  const trimmed = content.trim().slice(0, 15000);
+  const domain = getDomainFromUrl(url);
+  const wordCount = trimmed.split(/\s+/).filter((w) => w.length > 0).length;
+  // Use first non-empty line as title if it looks like one (< 120 chars)
+  const firstLine = trimmed.split("\n").find((l) => l.trim().length > 0) ?? "";
+  const title = firstLine.length < 120 ? firstLine.trim() : domain;
+  return {
+    url,
+    domain,
+    faviconUrl: getFaviconUrl(url),
+    title,
+    description: trimmed.slice(0, 300),
+    author: null,
+    publishedAt: null,
+    ogImageUrl: null,
+    mainContent: trimmed,
+    wordCount,
+    estimatedReadMinutes: Math.max(1, Math.round(wordCount / 200)),
+    contentQuality: "full",
+  };
+}
 
 const DAILY_GENERATION_LIMIT = 20;
 
@@ -34,6 +60,7 @@ export async function POST(request: NextRequest) {
     );
   }
   const normalizedUrl = urlParsed.data;
+  const pastedContent = parsed.data.pastedContent?.trim();
 
   // 3. Rate limit check
   const today = new Date();
@@ -51,66 +78,72 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Check article cache (shared, uses service role for reads too — but readable by authenticated)
+  // 4. Build article — from pasted content OR cache OR fetch
   const serviceSupabase = createSupabaseServiceRole();
   let article: ParsedArticle | null = null;
   let cached = false;
 
-  const { data: cachedArticle } = await supabase
-    .from("article_cache")
-    .select("*")
-    .eq("normalized_url", normalizedUrl)
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
-
-  if (cachedArticle) {
-    cached = true;
-    article = {
-      url: cachedArticle.url,
-      domain: cachedArticle.domain,
-      faviconUrl: getFaviconUrl(cachedArticle.url),
-      title: cachedArticle.title ?? getDomainFromUrl(cachedArticle.url),
-      description: cachedArticle.description ?? "",
-      author: cachedArticle.author,
-      publishedAt: cachedArticle.published_at,
-      ogImageUrl: cachedArticle.og_image_url,
-      mainContent: cachedArticle.main_content ?? "",
-      wordCount: cachedArticle.word_count ?? 0,
-      estimatedReadMinutes: cachedArticle.estimated_read_minutes ?? 1,
-      contentQuality: cachedArticle.content_quality ?? "full",
-    };
-  }
-
-  // 5. Parse URL if not cached
-  if (!article) {
-    const parseResult = await parseUrl(normalizedUrl);
-    if (isParseError(parseResult)) {
-      return NextResponse.json({ error: parseResult.error }, { status: 422 });
-    }
-    article = parseResult;
-
-    // Store in article_cache (service role — shared table)
-    await serviceSupabase
+  if (pastedContent) {
+    // Manual paste: skip cache entirely, build directly from pasted text
+    article = buildArticleFromPaste(normalizedUrl, pastedContent);
+  } else {
+    // Check article cache
+    const { data: cachedArticle } = await supabase
       .from("article_cache")
-      .upsert(
-        {
-          url: article.url,
-          normalized_url: normalizedUrl,
-          domain: article.domain,
-          title: article.title,
-          description: article.description,
-          author: article.author,
-          published_at: article.publishedAt,
-          og_image_url: article.ogImageUrl,
-          main_content: article.mainContent,
-          word_count: article.wordCount,
-          estimated_read_minutes: article.estimatedReadMinutes,
-          content_quality: article.contentQuality,
-          cached_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        },
-        { onConflict: "normalized_url" }
-      );
+      .select("*")
+      .eq("normalized_url", normalizedUrl)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (cachedArticle) {
+      cached = true;
+      article = {
+        url: cachedArticle.url,
+        domain: cachedArticle.domain,
+        faviconUrl: getFaviconUrl(cachedArticle.url),
+        title: cachedArticle.title ?? getDomainFromUrl(cachedArticle.url),
+        description: cachedArticle.description ?? "",
+        author: cachedArticle.author,
+        publishedAt: cachedArticle.published_at,
+        ogImageUrl: cachedArticle.og_image_url,
+        mainContent: cachedArticle.main_content ?? "",
+        wordCount: cachedArticle.word_count ?? 0,
+        estimatedReadMinutes: cachedArticle.estimated_read_minutes ?? 1,
+        contentQuality: cachedArticle.content_quality ?? "full",
+      };
+    }
+
+    // Fetch + parse if not cached
+    if (!article) {
+      const parseResult = await parseUrl(normalizedUrl);
+      if (isParseError(parseResult)) {
+        return NextResponse.json({ error: parseResult.error }, { status: 422 });
+      }
+      article = parseResult;
+
+      // Store in article_cache (service role — shared table)
+      await serviceSupabase
+        .from("article_cache")
+        .upsert(
+          {
+            url: article.url,
+            normalized_url: normalizedUrl,
+            domain: article.domain,
+            title: article.title,
+            description: article.description,
+            author: article.author,
+            published_at: article.publishedAt,
+            og_image_url: article.ogImageUrl,
+            main_content: article.mainContent,
+            word_count: article.wordCount,
+            estimated_read_minutes: article.estimatedReadMinutes,
+            content_quality: article.contentQuality,
+            cached_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          },
+          { onConflict: "normalized_url" }
+        );
+    }
   }
 
   // 6. Create generation record
