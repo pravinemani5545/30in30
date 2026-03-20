@@ -149,7 +149,59 @@ export function cleanPastedContent(raw: string): string {
   // Join, collapse any remaining 3+ blank lines, trim
   const joined = deduped.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 
-  return truncateAtSentence(joined, MAX_PASTE_CHARS);
+  // If still long, compress to key sentences rather than hard-truncating
+  return joined.length > 6000 ? compressToKeyContent(joined) : joined;
+}
+
+// Extract headings + first sentence of each paragraph + stat sentences.
+// Reduces a 15,000-char article to ~4,000 chars while keeping all key points.
+function compressToKeyContent(text: string): string {
+  const TARGET_CHARS = 5000;
+  const lines = text.split("\n").filter((l) => l.trim().length > 0);
+  const out: string[] = [];
+  let total = 0;
+
+  for (const line of lines) {
+    if (total >= TARGET_CHARS) break;
+
+    // Short lines (< 100 chars, doesn't end with period) are headings/titles — keep whole
+    const isHeading = line.length < 100 && !/\.\s*$/.test(line);
+    if (isHeading) {
+      out.push(line);
+      total += line.length + 1;
+      continue;
+    }
+
+    // For long paragraph lines: take first sentence
+    const firstSentence = extractFirstSentence(line);
+    out.push(firstSentence);
+    total += firstSentence.length + 1;
+
+    // Also grab any sentence with a number/stat (highly tweetable)
+    if (total < TARGET_CHARS) {
+      const statSentence = extractStatSentence(line);
+      if (statSentence && statSentence !== firstSentence) {
+        out.push(statSentence);
+        total += statSentence.length + 1;
+      }
+    }
+  }
+
+  return out.join("\n").trim();
+}
+
+function extractFirstSentence(text: string): string {
+  const match = text.match(/^.+?[.!?](?:\s|$)/);
+  return match ? match[0].trim() : text.slice(0, 200).trim();
+}
+
+function extractStatSentence(text: string): string | null {
+  // Sentences containing numbers, percentages, or "$" are usually the most tweetable
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  const stat = sentences.find(
+    (s, i) => i > 0 && /\d+[%k+]?|\$\d|#\d/.test(s) && s.length > 20
+  );
+  return stat?.trim() ?? null;
 }
 
 function truncateAtSentence(text: string, limit: number): string {
