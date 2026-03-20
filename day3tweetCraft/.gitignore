@@ -45,3 +45,6 @@ supabase/.temp/
 
 # claude local settings
 .claude/settings.local.json
+
+# session notes / chat logs
+docs/SESSION_NOTES.md
