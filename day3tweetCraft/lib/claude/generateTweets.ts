@@ -81,7 +81,7 @@ export async function generateTweets(
       },
     },
     {
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(60000),
     }
   );
 

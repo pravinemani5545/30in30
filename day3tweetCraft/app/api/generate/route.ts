@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 90; // seconds — Vercel Pro/Hobby limit
 import { z } from "zod";
 import { UrlSchema } from "@/lib/validations/url";
 import { parseUrl, isParseError } from "@/lib/parser";
@@ -181,7 +183,13 @@ export async function POST(request: NextRequest) {
       .update({ status: "failed", error_message: errMsg })
       .eq("id", generation.id);
 
-    if (err instanceof Error && err.name === "TimeoutError") {
+    const isAbort = err instanceof Error && (
+      err.name === "TimeoutError" ||
+      err.name === "AbortError" ||
+      err.message.toLowerCase().includes("aborted") ||
+      err.message.toLowerCase().includes("timed out")
+    );
+    if (isAbort) {
       return NextResponse.json(
         { error: "Generation timed out. Please try again." },
         { status: 504 }
