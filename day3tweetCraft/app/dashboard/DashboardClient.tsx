@@ -12,12 +12,14 @@ import { History } from "lucide-react";
 
 export function DashboardClient() {
   const { step, result, error, generate, reset, fetchBlocked } = useGenerate();
+  const [historyResult, setHistoryResult] = useState<GenerateResponse | null>(null);
   const [activeGenerationId, setActiveGenerationId] = useState<string | null>(null);
   const [historySheetOpen, setHistorySheetOpen] = useState(false);
 
   const handleGenerate = useCallback(
     async (url: string, pastedContent?: string) => {
       reset();
+      setHistoryResult(null);
       const data = await generate(url, pastedContent);
       if (data) {
         setActiveGenerationId(data.generationId);
@@ -28,13 +30,13 @@ export function DashboardClient() {
 
   async function handleSelectFromHistory(id: string) {
     setActiveGenerationId(id);
-    // Fetch full generation
     try {
       const res = await fetch(`/api/generations/${id}`);
       const data = await res.json() as { generation: Record<string, unknown>; variations: GenerateResponse["variations"] };
       if (res.ok && data.generation) {
         const gen = data.generation;
-        const reconstructed: GenerateResponse = {
+        reset();
+        setHistoryResult({
           generationId: id,
           articleTitle: gen.article_title as string ?? "",
           articleDomain: gen.article_domain as string ?? "",
@@ -44,18 +46,17 @@ export function DashboardClient() {
           variations: data.variations,
           contentQuality: gen.content_quality as GenerateResponse["contentQuality"],
           cached: true,
-        };
-        // This would need to be passed up — for now just trigger a re-render indicator
-        // In a more complete implementation, we'd use a global store
+        });
       }
     } catch {
       // Silently fail
     }
   }
 
+  const displayResult = result ?? historyResult;
   const isWorking = step === "fetching" || step === "reading" || step === "crafting";
-  const showEmpty = step === "idle" && !result;
-  const showResult = step === "done" && result;
+  const showEmpty = step === "idle" && !displayResult;
+  const showResult = !!displayResult && !isWorking;
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -116,7 +117,7 @@ export function DashboardClient() {
           )}
 
           {/* Results */}
-          {showResult && result && <TweetGrid result={result} />}
+          {showResult && displayResult && <TweetGrid result={displayResult} />}
 
           {/* Empty state */}
           {showEmpty && <EmptyState />}

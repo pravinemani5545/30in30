@@ -83,7 +83,14 @@ export async function POST(request: NextRequest) {
       existingVariation.content
     );
   } catch (err) {
-    if (err instanceof Error && err.name === "TimeoutError") {
+    console.error("Regenerate error:", err);
+    const isAbort = err instanceof Error && (
+      err.name === "TimeoutError" ||
+      err.name === "AbortError" ||
+      err.message.toLowerCase().includes("aborted") ||
+      err.message.toLowerCase().includes("timed out")
+    );
+    if (isAbort) {
       return NextResponse.json({ error: "Generation timed out. Please try again." }, { status: 504 });
     }
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

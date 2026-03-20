@@ -138,7 +138,7 @@ export function TweetCard({
           style={{
             background: "transparent",
             borderColor: "var(--border)",
-            color: "var(--text-tertiary)",
+            color: "var(--text-secondary)",
           }}
           title="Regenerate this variation"
         >
