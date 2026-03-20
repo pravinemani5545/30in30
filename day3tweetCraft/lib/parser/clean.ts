@@ -149,8 +149,7 @@ export function cleanPastedContent(raw: string): string {
   // Join, collapse any remaining 3+ blank lines, trim
   const joined = deduped.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 
-  // If still long, compress to key sentences rather than hard-truncating
-  return joined.length > 6000 ? compressToKeyContent(joined) : joined;
+  return truncateAtSentence(joined, MAX_PASTE_CHARS);
 }
 
 // Extract headings + first sentence of each paragraph + stat sentences.

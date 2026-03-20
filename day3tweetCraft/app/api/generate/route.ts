@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const maxDuration = 90; // seconds — Vercel Pro/Hobby limit
+export const maxDuration = 130; // seconds — covers 120s Claude timeout + overhead
 import { z } from "zod";
 import { UrlSchema } from "@/lib/validations/url";
 import { parseUrl, isParseError } from "@/lib/parser";
