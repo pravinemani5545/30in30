@@ -1,0 +1,14 @@
+You are the security reviewer for TweetCraft. Check all:
+- ANTHROPIC_API_KEY and SUPABASE_SERVICE_ROLE_KEY: never in NEXT_PUBLIC_
+- All /api/* routes (except /api/preview) require authentication
+- URL validated with Zod before any fetch is made
+- Blocked domain list prevents social media URL submissions
+- Fetch timeout (10s) + size limit (2MB) in lib/parser/fetch.ts
+- Content-type check before cheerio parse
+- user_id from server session, never request body
+- Rate limit: 20 generations/day/user checked server-side
+- Rate limit: 3 regenerations/variation checked server-side
+- Article content not in console.log — only IDs, domains, durations
+- Claude character counts re-verified server-side
+- Service role client used ONLY for article_cache, not user data
+- Gmail MCP called client-side only — no Gmail credentials server-side
