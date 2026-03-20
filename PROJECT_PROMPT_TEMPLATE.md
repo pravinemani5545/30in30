@@ -568,6 +568,15 @@
     - /product-self-knowledge — series context
     {{PROJECT_SPECIFIC_SKILLS}}
 
+    ## Git
+    This project lives inside the parent 30in30 monorepo.
+    Do NOT init a separate git repo or create a standalone GitHub repo.
+    All commits and pushes happen from the parent: ~/Desktop/Workspaces/30in30/
+    ```
+    cd ~/Desktop/Workspaces/30in30
+    git add day{{DAY_NUMBER}}{{APP_FOLDER_NAME}}/ && git commit && git push
+    ```
+
     ## Dev commands
     pnpm dev          # dev server
     pnpm build        # production build

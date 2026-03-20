@@ -24,6 +24,15 @@ Dashboard manages subscribers, shows last digest preview, and digest history.
 ## MODEL: HAIKU ONLY
 claude-haiku-4-5-20251001. This is summarisation — not complex generation.
 
+## Git
+This project lives inside the parent 30in30 monorepo.
+Do NOT init a separate git repo or create a standalone GitHub repo.
+All commits and pushes happen from the parent: ~/Desktop/Workspaces/30in30/
+```
+cd ~/Desktop/Workspaces/30in30
+git add day4hackerNewsDigest/ && git commit && git push
+```
+
 ## Dev commands
 pnpm dev          # start dev server
 pnpm build        # production build
