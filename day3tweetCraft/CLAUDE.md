@@ -86,3 +86,10 @@ Framer Motion: tweet card stagger ONLY.
 - Do NOT use `.errors` on ZodError in Zod 4 — use `.issues`
 - Do NOT call Claude API from Client Components
 - Do NOT trust Claude's characterCount — always re-count server-side
+
+## MANDATORY after every code change
+After completing any feature, fix, or refactor — update BOTH docs files:
+1. `docs/SESSION_NOTES.md` — add a new sub-section under the current session heading describing what changed, why, and any bugs hit
+2. `docs/ARCHITECTURE.md` — update any section whose content is now stale (timeouts, flags, error handling, data flow, limitations table, etc.)
+
+Do this before committing. These files are gitignored (local only) but must stay accurate as the authoritative record of the app's design.
