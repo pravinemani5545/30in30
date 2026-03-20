@@ -246,6 +246,7 @@ export async function POST(request: NextRequest) {
 
   const response: GenerateResponse = {
     generationId: generation.id,
+    articleUrl: article.url,
     articleTitle: article.title,
     articleDomain: article.domain,
     articleFaviconUrl: article.faviconUrl,

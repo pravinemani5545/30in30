@@ -91,6 +91,7 @@ export interface GenerationWithVariations extends Generation {
 
 export interface GenerateResponse {
   generationId: string;
+  articleUrl: string;
   articleTitle: string;
   articleDomain: string;
   articleFaviconUrl: string;

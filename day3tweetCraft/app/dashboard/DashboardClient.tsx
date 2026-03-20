@@ -38,6 +38,7 @@ export function DashboardClient() {
         reset();
         setHistoryResult({
           generationId: id,
+          articleUrl: gen.article_url as string ?? "",
           articleTitle: gen.article_title as string ?? "",
           articleDomain: gen.article_domain as string ?? "",
           articleFaviconUrl: gen.article_favicon_url as string ?? "",

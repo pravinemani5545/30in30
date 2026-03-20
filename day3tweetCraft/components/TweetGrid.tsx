@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
 import type { TweetVariation, GenerateResponse } from "@/types";
 import { TweetCard } from "./TweetCard";
@@ -48,6 +49,29 @@ export function TweetGrid({ result }: TweetGridProps) {
         className="rounded-xl border p-5"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
+        {/* Article link */}
+        <a
+          href={result.articleUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mb-3 group"
+        >
+          {result.articleFaviconUrl && (
+            <img
+              src={result.articleFaviconUrl}
+              alt=""
+              className="w-4 h-4 rounded-sm flex-shrink-0"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <span
+            className="text-sm font-medium truncate group-hover:underline"
+            style={{ color: "var(--accent)" }}
+          >
+            {result.articleTitle || result.articleDomain}
+          </span>
+          <ExternalLink size={12} style={{ color: "var(--accent)", flexShrink: 0 }} />
+        </a>
         <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
           {result.articleSummary}
         </p>
@@ -81,7 +105,7 @@ export function TweetGrid({ result }: TweetGridProps) {
               variation={variation}
               generationId={result.generationId}
               articleTitle={result.articleTitle}
-              articleUrl={result.variations[0]?.content ?? ""}
+              articleUrl={result.articleUrl}
               onRegenerated={handleRegenerated}
             />
           </motion.div>
@@ -92,7 +116,7 @@ export function TweetGrid({ result }: TweetGridProps) {
               variation={variations[4]}
               generationId={result.generationId}
               articleTitle={result.articleTitle}
-              articleUrl={result.variations[0]?.content ?? ""}
+              articleUrl={result.articleUrl}
               onRegenerated={handleRegenerated}
             />
           </motion.div>
