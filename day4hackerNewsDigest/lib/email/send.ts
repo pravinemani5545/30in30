@@ -18,7 +18,7 @@ export async function sendDigestEmail(
 
   try {
     const { data, error } = await getResend().emails.send({
-      from: "HN Digest <onboarding@resend.dev>",
+      from: "HN Digest <digest@pravinemani.com>",
       to: subscriber.email,
       subject,
       react: DigestEmail({ stories, dateString, unsubscribeUrl }),

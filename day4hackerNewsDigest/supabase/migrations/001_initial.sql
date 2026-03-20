@@ -1,16 +1,16 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
 
 -- ENUMS
 CREATE TYPE digest_status AS ENUM ('pending', 'sending', 'sent', 'failed');
 
 -- SUBSCRIBERS table
 CREATE TABLE subscribers (
-  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   email               TEXT NOT NULL,
   name                TEXT,
   is_active           BOOLEAN NOT NULL DEFAULT TRUE,
-  unsubscribe_token   UUID NOT NULL DEFAULT uuid_generate_v4(),
+  unsubscribe_token   UUID NOT NULL DEFAULT gen_random_uuid(),
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   unsubscribed_at     TIMESTAMPTZ,
   UNIQUE(user_id, email)
@@ -18,7 +18,7 @@ CREATE TABLE subscribers (
 
 -- DIGEST_RUNS table (one row per cron execution)
 CREATE TABLE digest_runs (
-  id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id           UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   status            digest_status NOT NULL DEFAULT 'pending',
   stories_json      JSONB,

@@ -30,7 +30,9 @@ export async function POST() {
   try {
     // Use service client for the digest run (needs to read all subscriber tokens)
     const serviceClient = createServiceClient();
-    const result = await runDigest(user.id, serviceClient);
+    const result = await runDigest(user.id, serviceClient, {
+      sendCopyTo: user.email,
+    });
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

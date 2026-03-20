@@ -6,7 +6,8 @@ import { sendDigestEmail } from "@/lib/email/send";
 
 export async function runDigest(
   userId: string,
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  options?: { sendCopyTo?: string }
 ): Promise<DigestResult> {
   // 1. Idempotency check
   const today = new Date().toISOString().split("T")[0];
@@ -123,7 +124,21 @@ export async function runDigest(
       }
     }
 
-    // 8. Finalize
+    // 8. Send copy to the triggering user if requested
+    if (options?.sendCopyTo) {
+      const copySubscriber: Subscriber & { unsubscribe_token: string } = {
+        id: "owner-copy",
+        user_id: userId,
+        email: options.sendCopyTo,
+        name: null,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        unsubscribe_token: "none",
+      };
+      await sendDigestEmail(copySubscriber, summarized, dateString);
+    }
+
+    // 9. Finalize
     const finalStatus = sentCount === 0 && failedCount > 0 ? "failed" : "sent";
 
     await supabase

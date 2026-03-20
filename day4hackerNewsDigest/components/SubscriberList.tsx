@@ -51,7 +51,7 @@ export default function SubscriberList({ subscribers, onChanged }: SubscriberLis
             <p className="text-sm text-text-primary truncate">{sub.email}</p>
             <p className="text-xs text-text-tertiary">
               {sub.name ? `${sub.name} · ` : ""}
-              Added {new Date(sub.created_at).toLocaleDateString()}
+              Added {sub.created_at.slice(0, 10)}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-3">
