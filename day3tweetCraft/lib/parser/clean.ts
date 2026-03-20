@@ -31,7 +31,8 @@ export function cleanText(rawText: string): string {
 const EXACT_NOISE = new Set([
   "home", "about", "blog", "contact", "search", "menu", "close", "open menu",
   "sign in", "sign up", "log in", "log out", "login", "logout", "register",
-  "get started", "get the app", "open in app", "open app",
+  "get started", "get the app", "get app", "open in app", "open app",
+  "write", "write a story", "start writing",
   "subscribe", "unsubscribe", "follow", "unfollow", "following",
   "share", "tweet", "retweet", "copy link", "copy", "like", "save", "bookmark",
   "read more", "load more", "see more", "view more", "show more",
@@ -44,6 +45,11 @@ const EXACT_NOISE = new Set([
   "dark mode", "light mode",
   "notifications", "settings", "profile",
   "upgrade", "go pro", "premium",
+  // Medium-specific
+  "top highlight", "top story", "member only",
+  "cancel", "respond", "reply",
+  "enter your email",
+  "remember me for faster sign in",
 ]);
 
 // Lines matching these patterns are noise regardless of surrounding content
@@ -66,7 +72,15 @@ const NOISE_LINE_PATTERNS = [
   /^sign up (for|to get|to receive)\b/i,
   /^subscribe to (our|the|this)\b/i,
   /^(leave|write|add|post) a (reply|comment|response)/i,
-  /^(\d+) comment(s)?\s*$/i,
+  /^(\d+) (comment|response)(s)?\s*$/i,
+  // Medium-specific
+  /^get .{1,40}'s stories in your inbox$/i,
+  /^join medium (for free)?\b/i,
+  /^more from .{1,60}$/i,
+  /^recommended from medium$/i,
+  /^written by\b/i,
+  /^\d+\s*(followers?|following)\s*$/i,
+  /^in\s+[A-Z].{1,60}by\b/,                // "In Publication by Author"
   /^tags?:\s/i,
   /^topics?:\s/i,
   /^categor(y|ies):\s/i,
@@ -83,6 +97,9 @@ const FOOTER_TRIGGER_LINES = new Set([
   "about", "help", "careers", "press", "legal", "status",
   "privacy", "terms", "sitemap", "contact us",
   "about us", "help center", "support",
+  // Medium comment / recommended sections
+  "responses", "write a response", "what are your thoughts?",
+  "recommended from medium", "more from medium",
 ]);
 
 export function cleanPastedContent(raw: string): string {

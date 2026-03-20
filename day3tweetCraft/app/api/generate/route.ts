@@ -10,7 +10,7 @@ import { cleanPastedContent, countWords } from "@/lib/parser/clean";
 
 const RequestSchema = z.object({
   url: z.string(),
-  pastedContent: z.string().max(50000).optional(),
+  pastedContent: z.string().max(150000).optional(),
 });
 
 function buildArticleFromPaste(url: string, rawContent: string): ParsedArticle {
