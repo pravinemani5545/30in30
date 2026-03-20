@@ -163,6 +163,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (genError || !generation) {
+    console.error("[generate] DB insert failed:", genError);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
@@ -173,9 +174,11 @@ export async function POST(request: NextRequest) {
   try {
     claudeOutput = await generateTweets(article, generation.id);
   } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error("[generate] Claude call failed:", errMsg);
     await supabase
       .from("generations")
-      .update({ status: "failed", error_message: "Generation failed" })
+      .update({ status: "failed", error_message: errMsg })
       .eq("id", generation.id);
 
     if (err instanceof Error && err.name === "TimeoutError") {
@@ -184,7 +187,8 @@ export async function POST(request: NextRequest) {
         { status: 504 }
       );
     }
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    const detail = process.env.NODE_ENV === "development" ? ` (${errMsg})` : "";
+    return NextResponse.json({ error: `Something went wrong. Please try again.${detail}` }, { status: 500 });
   }
 
   const generationMs = Date.now() - generationStart;
