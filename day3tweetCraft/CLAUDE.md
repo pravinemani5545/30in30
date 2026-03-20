@@ -18,7 +18,7 @@ Paste a blog post URL → TweetCraft fetches + parses the article server-side
 - Tailwind CSS v4 (CSS-first, @theme — NOT v3 syntax)
 - shadcn/ui + Framer Motion + Sonner + lucide-react
 - Supabase (Postgres + Auth via @supabase/ssr — NEVER auth-helpers)
-- Claude API (claude-sonnet-4-5, Structured Outputs via output_config.format)
+- Claude API (claude-haiku-4-5-20251001, Structured Outputs via output_config.format)
 - cheerio (server-side HTML parsing)
 - Gmail MCP (client-side draft creation)
 - pnpm
@@ -54,7 +54,7 @@ NEXT_PUBLIC_APP_URL            # app domain
 ```ts
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 client.messages.parse({
-  model: "claude-sonnet-4-5",
+  model: "claude-haiku-4-5-20251001",
   output_config: { format: zodOutputFormat(Schema) }, // NOTE: 1 arg, no name
   ...
 })

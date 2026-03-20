@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   try {
     const response = await anthropic.messages.create(
       {
-        model: "claude-sonnet-4-5",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1024,
         system: `You are a compassionate, perceptive journal assistant. You read stream-of-consciousness voice transcripts and find the emotional truth beneath the surface. You identify what happened, how it felt, and what it means. You generate titles that are specific to what actually happened in the entry — use real details, names, or situations from the transcript. You surface implicit gratitude, not just explicit thanks. Your intention suggestions are specific and grounded — not generic motivational advice. Extract structure without losing soul.`,
         messages: [
