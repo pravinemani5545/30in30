@@ -13,13 +13,15 @@ const envSchema = z.object({
 
 type Env = z.infer<typeof envSchema>;
 
-function getEnv(): Env {
+let _env: Env | null = null;
+
+export function getEnv(): Env {
+  if (_env) return _env;
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     console.error("Invalid environment variables:", parsed.error.issues);
     throw new Error("Invalid environment variables");
   }
-  return parsed.data;
+  _env = parsed.data;
+  return _env;
 }
-
-export const env = getEnv();

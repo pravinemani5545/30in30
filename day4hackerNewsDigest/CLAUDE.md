@@ -52,7 +52,7 @@ NEXT_PUBLIC_APP_URL
 - Auth: createServerClient + getUser() — never getSession() alone
 - user_id always from server session, never from request body
 - Service role client used in cron handler for digest run writes
-- Cron + unsubscribe endpoints excluded from session auth in proxy.ts
+- Cron + unsubscribe endpoints excluded from session auth in middleware.ts
 - All API clients lazy-initialized (getAnthropic(), getResend()) — never module-level
 
 ## Skills
@@ -69,6 +69,6 @@ NEXT_PUBLIC_APP_URL
 - Do NOT log subscriber email addresses
 - Do NOT initialize API clients at module scope — use lazy functions
 - headers(), cookies(), params return Promises in Next.js 16 — must await
-- proxy.ts replaces middleware.ts (Node.js runtime, NOT Edge)
+- middleware.ts handles auth routing (runs on Edge runtime)
 - Zod 4: use .issues not .errors, { error: "..." } not { message: "..." }
 - Zod 4: .flatten() deprecated — use z.treeifyError() or .issues directly
