@@ -82,6 +82,9 @@ export default function DigestEmail({
                   </span>
                 </Text>
                 <Text style={summaryStyle}>{story.summary}</Text>
+                {story.reason && !story.parseError && (
+                  <Text style={reasonStyle}>→ {story.reason}</Text>
+                )}
                 {index < stories.length - 1 && <Hr style={dividerStyle} />}
               </Section>
             ))}
@@ -178,6 +181,14 @@ const summaryStyle: React.CSSProperties = {
   color: "#8A8580",
   lineHeight: "1.5",
   margin: "0",
+};
+
+const reasonStyle: React.CSSProperties = {
+  fontSize: "13px",
+  color: "#E8A020",
+  lineHeight: "1.4",
+  margin: "6px 0 0",
+  fontStyle: "italic",
 };
 
 const dividerStyle: React.CSSProperties = {
