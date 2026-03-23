@@ -29,17 +29,17 @@ export function DimensionBars({ scores, totalScore }: DimensionBarsProps) {
           return (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="font-[family-name:var(--font-mono)] text-xs text-text-secondary">
+                <span className="font-[family-name:var(--font-mono)] text-sm text-text-secondary">
                   {label}
                 </span>
                 <span
-                  className="font-[family-name:var(--font-mono)] text-xs font-bold"
+                  className="font-[family-name:var(--font-mono)] text-sm font-bold"
                   style={{ color }}
                 >
                   {value}/20
                 </span>
               </div>
-              <div className="h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+              <div className="h-2 bg-surface-elevated rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-1000 ease-out"
                   style={{

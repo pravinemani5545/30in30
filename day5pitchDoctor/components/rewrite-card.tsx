@@ -26,7 +26,7 @@ export function RewriteCard({ improvement, index }: RewriteCardProps) {
   }
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 relative group">
+    <div className="bg-surface border border-border rounded-lg p-5 relative group">
       <button
         onClick={handleCopy}
         className="absolute top-3 right-3 p-1.5 rounded-md bg-surface-elevated border border-border opacity-0 group-hover:opacity-100 transition-opacity hover:border-text-muted"
@@ -40,17 +40,17 @@ export function RewriteCard({ improvement, index }: RewriteCardProps) {
       </button>
 
       <div className="space-y-3">
-        <span className="font-[family-name:var(--font-mono)] text-xs text-text-muted">
+        <span className="font-[family-name:var(--font-mono)] text-sm text-text-muted">
           {label}
         </span>
-        <p className="text-text-primary text-sm leading-relaxed pr-8">
+        <p className="text-text-primary text-base leading-relaxed pr-8">
           {improvement.rewrite}
         </p>
         <div className="space-y-1">
-          <p className="font-[family-name:var(--font-mono)] text-xs text-text-muted">
+          <p className="font-[family-name:var(--font-mono)] text-sm text-text-muted">
             {improvement.reasoning}
           </p>
-          <p className="font-[family-name:var(--font-mono)] text-xs text-accent">
+          <p className="font-[family-name:var(--font-mono)] text-sm text-accent">
             Key change: {improvement.what_changed}
           </p>
         </div>

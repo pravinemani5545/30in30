@@ -12,7 +12,7 @@ interface AnalysisResultProps {
 
 export function AnalysisResult({ analysis }: AnalysisResultProps) {
   return (
-    <div className="space-y-8 w-full max-w-lg mx-auto">
+    <div className="space-y-10 w-full max-w-xl mx-auto">
       {/* Score */}
       <div className="fade-in-up" style={{ animationDelay: "0ms" }}>
         <ScoreDisplay score={analysis.score} verdict={analysis.verdict} />
@@ -28,7 +28,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
 
       {/* Critique */}
       <div className="fade-in-up" style={{ animationDelay: "300ms" }}>
-        <h3 className="font-[family-name:var(--font-mono)] text-xs text-text-muted mb-3 uppercase tracking-wider">
+        <h3 className="font-[family-name:var(--font-mono)] text-sm text-text-muted mb-3 uppercase tracking-wider">
           Critique
         </h3>
         <CritiqueBlock critique={analysis.critique} score={analysis.score} />
@@ -36,7 +36,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
 
       {/* Rewrites */}
       <div className="fade-in-up" style={{ animationDelay: "450ms" }}>
-        <h3 className="font-[family-name:var(--font-mono)] text-xs text-text-muted mb-3 uppercase tracking-wider">
+        <h3 className="font-[family-name:var(--font-mono)] text-sm text-text-muted mb-3 uppercase tracking-wider">
           Improved Versions
         </h3>
         <div className="space-y-3">

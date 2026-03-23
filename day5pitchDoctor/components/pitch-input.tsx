@@ -37,13 +37,13 @@ export function PitchInput() {
             placeholder="Describe your startup in one sentence..."
             maxLength={500}
             disabled={loading}
-            className="w-full bg-surface border border-border rounded-lg px-4 py-4 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
+            className="w-full bg-surface border border-border rounded-lg px-5 py-4 text-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
           />
         </div>
 
         <div className="flex items-center justify-between">
           <span
-            className={`font-[family-name:var(--font-mono)] text-xs transition-colors ${
+            className={`font-[family-name:var(--font-mono)] text-sm transition-colors ${
               charCount >= 500
                 ? "text-score-red"
                 : charCount >= 400
@@ -55,20 +55,20 @@ export function PitchInput() {
           </span>
 
           {error && (
-            <span className="text-score-red text-xs">{error}</span>
+            <span className="text-score-red text-sm">{error}</span>
           )}
         </div>
 
         <button
           type="submit"
           disabled={loading || pitch.length < 10}
-          className="w-full bg-accent hover:bg-accent-hover text-background font-medium rounded-lg px-4 py-3.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full bg-accent hover:bg-accent-hover text-background font-semibold rounded-lg px-4 py-4 text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             "Analyzing..."
           ) : (
             <>
-              <Stethoscope className="w-4 h-4" />
+              <Stethoscope className="w-5 h-5" />
               Diagnose
             </>
           )}
@@ -77,7 +77,7 @@ export function PitchInput() {
 
       {/* Loading skeleton */}
       {loading && (
-        <div className="space-y-6 w-full max-w-lg mx-auto">
+        <div className="space-y-6 w-full max-w-xl mx-auto">
           <div className="flex flex-col items-center gap-3">
             <div className="skeleton h-16 w-24" />
             <div className="skeleton h-4 w-48" />
@@ -110,14 +110,14 @@ export function PitchInput() {
           {!saved && <SaveNudge />}
 
           {saved && (
-            <p className="text-center font-[family-name:var(--font-mono)] text-xs text-score-green">
+            <p className="text-center font-[family-name:var(--font-mono)] text-sm text-score-green">
               Analysis saved to your history
             </p>
           )}
 
           <button
             onClick={handleNewAnalysis}
-            className="w-full border border-border hover:border-text-muted text-text-secondary rounded-lg px-4 py-3 text-sm transition-colors"
+            className="w-full border border-border hover:border-text-muted text-text-secondary rounded-lg px-4 py-3.5 text-base transition-colors"
           >
             Analyze another pitch
           </button>

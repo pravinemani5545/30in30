@@ -13,7 +13,7 @@ export function CritiqueBlock({ critique, score }: CritiqueBlockProps) {
       className="border-l-2 pl-4 py-2"
       style={{ borderColor: color }}
     >
-      <p className="font-[family-name:var(--font-mono)] text-sm text-text-secondary leading-relaxed">
+      <p className="font-[family-name:var(--font-mono)] text-base text-text-secondary leading-relaxed">
         {critique}
       </p>
     </div>

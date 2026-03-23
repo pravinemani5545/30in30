@@ -38,20 +38,20 @@ export function ScoreDisplay({ score, verdict }: ScoreDisplayProps) {
     <div className="flex flex-col items-center gap-3">
       <span
         ref={scoreRef}
-        className="font-[family-name:var(--font-mono)] text-7xl font-bold leading-none"
+        className="font-[family-name:var(--font-mono)] text-8xl font-bold leading-none"
         style={{ color }}
       >
         0
       </span>
       <div className="flex items-center gap-2">
         <span
-          className="font-[family-name:var(--font-mono)] text-xs"
+          className="font-[family-name:var(--font-mono)] text-sm"
           style={{ color }}
         >
           / 100
         </span>
       </div>
-      <p className="font-[family-name:var(--font-mono)] text-sm text-text-secondary text-center max-w-xs">
+      <p className="font-[family-name:var(--font-mono)] text-base text-text-secondary text-center max-w-sm">
         {verdict}
       </p>
     </div>
