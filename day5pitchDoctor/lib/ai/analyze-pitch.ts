@@ -64,7 +64,7 @@ export async function analyzePitch(
     : `Analyze this startup one-liner: "${pitch}"`;
 
   const model = getGemini().getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",
