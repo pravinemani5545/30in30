@@ -1,7 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { RateLimitResult } from "@/types";
 
-const ANON_LIMIT = 5;
+const ANON_LIMIT = 15;
 const AUTH_LIMIT = 20;
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
