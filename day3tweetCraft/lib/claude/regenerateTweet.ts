@@ -1,29 +1,53 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { TweetType } from "@/types";
 import { SYSTEM_PROMPT, buildRegeneratePrompt } from "./prompts";
 
-const SingleTweetSchema = z.object({
-  tweetType: z.enum(["hook", "story", "stat", "contrarian", "listicle"]),
-  content: z.string().max(300),
-  characterCount: z.number().int(),
-  hookScore: z.number().int().min(1).max(10),
-  hookAnalysis: z.string(),
-  retweetPotential: z.number().int().min(1).max(10),
-  replyBait: z.number().int().min(1).max(10),
-  savesPotential: z.number().int().min(1).max(10),
-  whyThisWorks: z.string(),
-  potentialWeakness: z.string(),
-});
+interface SingleTweetOutput {
+  tweetType: TweetType;
+  content: string;
+  characterCount: number;
+  hookScore: number;
+  hookAnalysis: string;
+  retweetPotential: number;
+  replyBait: number;
+  savesPotential: number;
+  whyThisWorks: string;
+  potentialWeakness: string;
+}
 
-let _client: Anthropic | null = null;
+const singleTweetSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    tweetType: {
+      type: SchemaType.STRING,
+      enum: ["hook", "story", "stat", "contrarian", "listicle"],
+    },
+    content: { type: SchemaType.STRING },
+    characterCount: { type: SchemaType.INTEGER },
+    hookScore: { type: SchemaType.INTEGER },
+    hookAnalysis: { type: SchemaType.STRING },
+    retweetPotential: { type: SchemaType.INTEGER },
+    replyBait: { type: SchemaType.INTEGER },
+    savesPotential: { type: SchemaType.INTEGER },
+    whyThisWorks: { type: SchemaType.STRING },
+    potentialWeakness: { type: SchemaType.STRING },
+  },
+  required: [
+    "tweetType",
+    "content",
+    "characterCount",
+    "hookScore",
+    "hookAnalysis",
+    "retweetPotential",
+    "replyBait",
+    "savesPotential",
+    "whyThisWorks",
+    "potentialWeakness",
+  ],
+};
 
-function getClient(): Anthropic {
-  if (!_client) {
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return _client;
+function getGemini() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 }
 
 function countTweetChars(content: string): number {
@@ -51,40 +75,33 @@ export async function regenerateTweet(
   article: { title: string; domain: string; mainContent: string },
   tweetType: TweetType,
   previousContent: string
-): Promise<z.infer<typeof SingleTweetSchema>> {
-  const client = getClient();
+): Promise<SingleTweetOutput> {
+  const gemini = getGemini();
 
   const contentSnippet = article.mainContent.slice(0, 2000);
 
-  const message = await client.messages.parse(
-    {
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: buildRegeneratePrompt(
-            { title: article.title, domain: article.domain, contentSnippet },
-            tweetType,
-            previousContent
-          ),
-        },
-      ],
-      output_config: {
-        format: zodOutputFormat(SingleTweetSchema),
-      },
+  const model = gemini.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: singleTweetSchema,
     },
-    {
-      signal: AbortSignal.timeout(20000),
-    }
+  });
+
+  const result = await model.generateContent(
+    buildRegeneratePrompt(
+      { title: article.title, domain: article.domain, contentSnippet },
+      tweetType,
+      previousContent
+    )
   );
 
-  const result = message.parsed_output;
-  if (!result) throw new Error("Claude returned no structured output");
+  const parsed = JSON.parse(result.response.text()) as SingleTweetOutput;
+  if (!parsed) throw new Error("Gemini returned no structured output");
 
-  const content = truncateToLimit(result.content);
+  const content = truncateToLimit(parsed.content);
   const characterCount = countTweetChars(content);
 
-  return { ...result, content, characterCount };
+  return { ...parsed, content, characterCount };
 }

@@ -1,36 +1,58 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { ClaudeGenerateOutput, ParsedArticle } from "@/types";
 import { SYSTEM_PROMPT, buildUserPrompt } from "./prompts";
 
-const TweetVariationSchema = z.object({
-  variationNumber: z.number().int().min(1).max(5),
-  tweetType: z.enum(["hook", "story", "stat", "contrarian", "listicle"]),
-  content: z.string().max(300),
-  characterCount: z.number().int(),
-  hookScore: z.number().int().min(1).max(10),
-  hookAnalysis: z.string(),
-  retweetPotential: z.number().int().min(1).max(10),
-  replyBait: z.number().int().min(1).max(10),
-  savesPotential: z.number().int().min(1).max(10),
-  whyThisWorks: z.string(),
-  potentialWeakness: z.string(),
-});
+const tweetVariationSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    variationNumber: { type: SchemaType.INTEGER },
+    tweetType: {
+      type: SchemaType.STRING,
+      enum: ["hook", "story", "stat", "contrarian", "listicle"],
+    },
+    content: { type: SchemaType.STRING },
+    characterCount: { type: SchemaType.INTEGER },
+    hookScore: { type: SchemaType.INTEGER },
+    hookAnalysis: { type: SchemaType.STRING },
+    retweetPotential: { type: SchemaType.INTEGER },
+    replyBait: { type: SchemaType.INTEGER },
+    savesPotential: { type: SchemaType.INTEGER },
+    whyThisWorks: { type: SchemaType.STRING },
+    potentialWeakness: { type: SchemaType.STRING },
+  },
+  required: [
+    "variationNumber",
+    "tweetType",
+    "content",
+    "characterCount",
+    "hookScore",
+    "hookAnalysis",
+    "retweetPotential",
+    "replyBait",
+    "savesPotential",
+    "whyThisWorks",
+    "potentialWeakness",
+  ],
+};
 
-const GenerateOutputSchema = z.object({
-  articleSummary: z.string(),
-  keyInsights: z.array(z.string()).min(3).max(5),
-  tweets: z.array(TweetVariationSchema).length(5),
-});
+const generateOutputSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    articleSummary: { type: SchemaType.STRING },
+    keyInsights: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+    },
+    tweets: {
+      type: SchemaType.ARRAY,
+      items: tweetVariationSchema,
+    },
+  },
+  required: ["articleSummary", "keyInsights", "tweets"],
+};
 
-let _client: Anthropic | null = null;
-
-function getClient(): Anthropic {
-  if (!_client) {
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return _client;
+function getGemini() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 }
 
 // Re-count characters server-side (Twitter: URLs = 23 chars)
@@ -62,41 +84,32 @@ export async function generateTweets(
   article: ParsedArticle,
   generationId?: string
 ): Promise<ClaudeGenerateOutput> {
-  const client = getClient();
+  const gemini = getGemini();
   const startedAt = Date.now();
 
-  const message = await client.messages.parse(
-    {
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: buildUserPrompt(article),
-        },
-      ],
-      output_config: {
-        format: zodOutputFormat(GenerateOutputSchema),
-      },
+  const model = gemini.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: generateOutputSchema,
     },
-    {
-      signal: AbortSignal.timeout(120000),
-    }
-  );
+  });
 
+  const result = await model.generateContent(buildUserPrompt(article));
   const duration = Date.now() - startedAt;
-  const result = message.parsed_output;
 
-  if (!result) {
-    throw new Error("Claude returned no structured output");
+  const parsed = JSON.parse(result.response.text()) as ClaudeGenerateOutput;
+
+  if (!parsed || !parsed.tweets) {
+    throw new Error("Gemini returned no structured output");
   }
 
   // Validate and fix character counts server-side
-  const validatedTweets = result.tweets.map((tweet) => {
+  const validatedTweets = parsed.tweets.map((tweet) => {
     const actual = countTweetChars(tweet.content);
     if (actual !== tweet.characterCount) {
-      console.warn(`[claude] Character count mismatch for tweet ${tweet.variationNumber}: Claude said ${tweet.characterCount}, actual ${actual}`);
+      console.warn(`[gemini] Character count mismatch for tweet ${tweet.variationNumber}: Gemini said ${tweet.characterCount}, actual ${actual}`);
     }
 
     const content = truncateToLimit(tweet.content);
@@ -105,7 +118,7 @@ export async function generateTweets(
     return { ...tweet, content, characterCount };
   });
 
-  console.info("[claude] generateTweets complete", {
+  console.info("[gemini] generateTweets complete", {
     generationId,
     durationMs: duration,
     contentQuality: article.contentQuality,
@@ -113,7 +126,7 @@ export async function generateTweets(
   });
 
   return {
-    ...result,
+    ...parsed,
     tweets: validatedTweets,
   };
 }

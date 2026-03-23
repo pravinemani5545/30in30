@@ -8,8 +8,8 @@ const envSchema = z.object({
   // Supabase — server only
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 
-  // Anthropic — server only
-  ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-").optional(),
+  // Gemini — server only
+  GEMINI_API_KEY: z.string().min(1).optional(),
 
   // Apollo.io — server only
   APOLLO_API_KEY: z.string().min(1).optional(),
@@ -40,8 +40,8 @@ function validateEnv() {
 
   // Production guards
   if (env.NODE_ENV === "production") {
-    if (!env.ANTHROPIC_API_KEY) {
-      throw new Error("ANTHROPIC_API_KEY is required in production");
+    if (!env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is required in production");
     }
     if (env.ENRICHMENT_PROVIDER === "apollo" && !env.APOLLO_API_KEY) {
       throw new Error(

@@ -1,89 +1,96 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { RawProfileData, EnrichmentResult } from "@/types";
 import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/claude/prompts";
 
-// Zod schema for structured output
-const EnrichmentOutputSchema = z.object({
-  person: z.object({
-    fullName: z.string(),
-    headline: z.string(),
-    location: z.string(),
-    summary: z.string(),
-    keyTalkingPoints: z.array(z.string()),
-  }),
-  company: z.object({
-    name: z.string(),
-    domain: z.string(),
-    industry: z.string(),
-    estimatedSize: z.string(),
-    description: z.string(),
-    recentSignals: z.array(z.string()),
-  }),
-  followUpSuggestions: z
-    .array(
-      z.object({
-        tone: z.enum(["warm", "direct", "casual"]),
-        message: z.string(),
-      })
-    )
-    .min(3)
-    .max(3),
-  enrichmentConfidence: z.enum(["high", "medium", "low"]),
-  enrichmentNotes: z.string(),
-});
+// Gemini response schema (equivalent to the previous Zod schema)
+const responseSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    person: {
+      type: SchemaType.OBJECT,
+      properties: {
+        fullName: { type: SchemaType.STRING },
+        headline: { type: SchemaType.STRING },
+        location: { type: SchemaType.STRING },
+        summary: { type: SchemaType.STRING },
+        keyTalkingPoints: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+        },
+      },
+      required: ["fullName", "headline", "location", "summary", "keyTalkingPoints"],
+    },
+    company: {
+      type: SchemaType.OBJECT,
+      properties: {
+        name: { type: SchemaType.STRING },
+        domain: { type: SchemaType.STRING },
+        industry: { type: SchemaType.STRING },
+        estimatedSize: { type: SchemaType.STRING },
+        description: { type: SchemaType.STRING },
+        recentSignals: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+        },
+      },
+      required: ["name", "domain", "industry", "estimatedSize", "description", "recentSignals"],
+    },
+    followUpSuggestions: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          tone: {
+            type: SchemaType.STRING,
+            enum: ["warm", "direct", "casual"],
+          },
+          message: { type: SchemaType.STRING },
+        },
+        required: ["tone", "message"],
+      },
+    },
+    enrichmentConfidence: {
+      type: SchemaType.STRING,
+      enum: ["high", "medium", "low"],
+    },
+    enrichmentNotes: { type: SchemaType.STRING },
+  },
+  required: ["person", "company", "followUpSuggestions", "enrichmentConfidence", "enrichmentNotes"],
+};
 
-let _client: Anthropic | null = null;
-
-function getClient(): Anthropic {
-  if (!_client) {
-    _client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
-  }
-  return _client;
+function getGemini() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 }
 
 export async function enrichContact(
   profile: RawProfileData,
   contactId?: string
 ): Promise<EnrichmentResult> {
-  const client = getClient();
   const startedAt = Date.now();
 
-  const message = await client.messages.parse(
-    {
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2048,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: buildUserPrompt(profile),
-        },
-      ],
-      output_config: {
-        format: zodOutputFormat(EnrichmentOutputSchema),
-      },
+  const model = getGemini().getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema,
     },
-    {
-      signal: AbortSignal.timeout(60000),
-    }
-  );
-
-  const duration = Date.now() - startedAt;
-  const result = message.parsed_output;
-
-  if (!result) {
-    throw new Error("Claude returned no structured output");
-  }
-
-  console.info("[claude] Enrichment complete", {
-    contactId,
-    duration,
-    confidence: result.enrichmentConfidence,
   });
 
-  return result as EnrichmentResult;
+  const result = await model.generateContent(buildUserPrompt(profile));
+  const duration = Date.now() - startedAt;
+
+  const parsed = JSON.parse(result.response.text()) as EnrichmentResult;
+
+  if (!parsed) {
+    throw new Error("Gemini returned no structured output");
+  }
+
+  console.info("[gemini] Enrichment complete", {
+    contactId,
+    duration,
+    confidence: parsed.enrichmentConfidence,
+  });
+
+  return parsed;
 }

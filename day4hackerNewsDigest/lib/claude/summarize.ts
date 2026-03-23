@@ -1,45 +1,36 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
 import type { HNStory, SummarizedStory } from "@/types";
 import { SYSTEM_PROMPT, buildSummarizePrompt } from "./prompts";
 
-function getAnthropic() {
-  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getGemini() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 }
 
-const SummarySchema = z.object({
-  summary: z.string(),
-  relevanceScore: z.number(),
-  reason: z.string(),
-});
+const responseSchema: Schema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    summary: { type: SchemaType.STRING },
+    relevanceScore: { type: SchemaType.NUMBER },
+    reason: { type: SchemaType.STRING },
+  },
+  required: ["summary", "relevanceScore", "reason"],
+};
 
 export async function summarizeStory(
   story: HNStory
 ): Promise<SummarizedStory> {
   try {
-    const response = await getAnthropic().messages.parse(
-      {
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 384,
-        system: [
-          {
-            type: "text",
-            text: SYSTEM_PROMPT,
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        messages: [
-          { role: "user", content: buildSummarizePrompt(story) },
-        ],
-        output_config: {
-          format: zodOutputFormat(SummarySchema),
-        },
+    const model = getGemini().getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema,
       },
-      { signal: AbortSignal.timeout(15000) }
-    );
+    });
 
-    const parsed = response.parsed_output;
+    const result = await model.generateContent(buildSummarizePrompt(story));
+    const parsed = JSON.parse(result.response.text());
 
     if (!parsed) {
       return {

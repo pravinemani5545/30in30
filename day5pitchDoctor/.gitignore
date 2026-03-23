@@ -7,6 +7,7 @@
 
 # env files
 .env*
+!.env.local.example
 
 # misc
 .DS_Store
@@ -25,8 +26,6 @@ supabase/.temp/
 # claude local settings
 .claude/settings.local.json
 
-# local docs (session notes + architecture — root or docs/ folder)
-SESSION_NOTES.md
-ARCHITECTURE.md
-docs/SESSION_NOTES.md
-docs/ARCHITECTURE.md
+# local docs (not committed)
+Architecture.md
+Log.md

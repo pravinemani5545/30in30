@@ -1,6 +1,6 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+export function getGemini() {
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+}
