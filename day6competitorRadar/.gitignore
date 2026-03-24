@@ -25,8 +25,10 @@ supabase/.temp/
 # claude local settings
 .claude/settings.local.json
 
-# local docs (session notes + architecture — root or docs/ folder)
+# local docs
 SESSION_NOTES.md
 ARCHITECTURE.md
+Architecture.md
+Log.md
 docs/SESSION_NOTES.md
 docs/ARCHITECTURE.md
