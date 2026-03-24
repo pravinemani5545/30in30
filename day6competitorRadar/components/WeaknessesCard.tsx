@@ -1,5 +1,8 @@
 'use client'
 
+import { ShieldAlert } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { WeaknessRow } from './WeaknessRow'
 import type { Weakness } from '@/types'
 
@@ -17,15 +20,30 @@ export function WeaknessesCard({ weaknesses }: { weaknesses: Weakness[] }) {
     : 'border-l-severity-low'
 
   return (
-    <div className={`col-span-full rounded-lg border border-border bg-surface p-6 space-y-4 border-l-2 ${borderColor}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-severity-high">
-        Exploitable Weaknesses
-      </span>
-      <div className="divide-y divide-border">
-        {weaknesses.map((weakness, i) => (
-          <WeaknessRow key={i} weakness={weakness} />
-        ))}
-      </div>
-    </div>
+    <Card className={`col-span-full border-l-2 ${borderColor}`}>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-severity-high/15">
+            <ShieldAlert className="h-3.5 w-3.5 text-severity-high" />
+          </div>
+          <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-severity-high">
+            Exploitable Weaknesses
+          </CardTitle>
+          <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-severity-high/15 text-[11px] font-semibold text-severity-high">
+            {weaknesses.length}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-0">
+          {weaknesses.map((weakness, i) => (
+            <div key={i}>
+              <WeaknessRow weakness={weakness} />
+              {i < weaknesses.length - 1 && <Separator className="my-1" />}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

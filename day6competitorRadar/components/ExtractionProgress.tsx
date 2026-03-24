@@ -1,42 +1,60 @@
 'use client'
 
-import { Check, Loader2 } from 'lucide-react'
+import { Check, Loader2, Minus } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AnalyzeProgressStep } from '@/types'
 
 export function ExtractionProgress({ steps }: { steps: AnalyzeProgressStep[] }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-6 space-y-3">
-      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-text-tertiary">
-        Extraction Progress
-      </span>
-      <div className="space-y-2">
-        {steps.map((step) => (
-          <div key={step.id} className="flex items-center gap-3">
-            {step.status === 'complete' ? (
-              <Check className="h-4 w-4 text-confidence-high shrink-0" />
-            ) : step.status === 'active' ? (
-              <Loader2 className="h-4 w-4 text-accent animate-spin shrink-0" />
-            ) : step.status === 'skipped' ? (
-              <div className="h-4 w-4 rounded-full border border-text-tertiary flex items-center justify-center shrink-0">
-                <span className="text-[8px] text-text-tertiary">-</span>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          Extraction Progress
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {steps.map((step, i) => (
+            <div key={step.id} className="flex items-center gap-3">
+              {/* Step indicator */}
+              <div className={cn(
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors',
+                step.status === 'complete' && 'bg-success/15',
+                step.status === 'active' && 'bg-primary/15',
+                step.status === 'skipped' && 'bg-muted',
+                step.status === 'pending' && 'bg-muted',
+              )}>
+                {step.status === 'complete' ? (
+                  <Check className="h-3.5 w-3.5 text-success" />
+                ) : step.status === 'active' ? (
+                  <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+                ) : step.status === 'skipped' ? (
+                  <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <span className="text-[10px] font-medium text-muted-foreground">{i + 1}</span>
+                )}
               </div>
-            ) : (
-              <div className="h-4 w-4 rounded-full border border-border shrink-0" />
-            )}
-            <span className={`text-sm ${
-              step.status === 'active'
-                ? 'text-text-primary'
-                : step.status === 'complete'
-                ? 'text-text-secondary'
-                : step.status === 'skipped'
-                ? 'text-text-tertiary line-through'
-                : 'text-text-tertiary'
-            }`}>
-              {step.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+
+              {/* Connector line */}
+              {i < steps.length - 1 && (
+                <div className="absolute ml-3 mt-10 h-3 w-px bg-border" />
+              )}
+
+              {/* Label */}
+              <span className={cn(
+                'text-sm',
+                step.status === 'active' && 'text-foreground font-medium',
+                step.status === 'complete' && 'text-muted-foreground',
+                step.status === 'skipped' && 'text-muted-foreground line-through',
+                step.status === 'pending' && 'text-muted-foreground',
+              )}>
+                {step.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, DM_Sans } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
 
 const instrumentSerif = Instrument_Serif({
@@ -29,15 +30,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`dark ${instrumentSerif.variable} ${dmSans.variable}`}>
-      <body className="min-h-screen bg-background font-body text-text-primary antialiased">
-        {children}
+      <body>
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
         <Toaster
           theme="dark"
           toastOptions={{
             style: {
-              background: '#1A1A1A',
-              border: '1px solid #262626',
-              color: '#F5F0E8',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              color: 'var(--foreground)',
             },
           }}
         />

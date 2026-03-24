@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2, Globe } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { UrlPreviewCard } from './UrlPreviewCard'
 import type { PreviewResponse } from '@/types'
 
@@ -57,22 +59,22 @@ export function UrlInputForm({ onSubmit, isLoading }: Props) {
 
   return (
     <div className="space-y-3">
-      <form onSubmit={handleSubmit} className="flex gap-3">
+      <form onSubmit={handleSubmit} className="flex gap-2">
         <div className="relative flex-1">
-          <input
+          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Enter a competitor's URL..."
-            className="w-full rounded-lg border border-border bg-surface-input px-4 py-3 text-text-primary placeholder:text-text-tertiary focus:border-border-focus focus:outline-none"
+            placeholder="https://competitor.com"
+            className="h-11 pl-9 bg-background text-foreground"
             disabled={isLoading}
           />
-          <div className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 bg-accent transition-all duration-300 focus-within:w-full" />
         </div>
-        <button
+        <Button
           type="submit"
           disabled={!url || isLoading}
-          className="flex items-center gap-2 rounded-lg bg-accent px-6 py-3 font-medium text-background transition-colors hover:bg-accent-hover disabled:opacity-50 shrink-0"
+          className="h-11 px-5 gap-2"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -82,15 +84,15 @@ export function UrlInputForm({ onSubmit, isLoading }: Props) {
               <ArrowRight className="h-4 w-4" />
             </>
           )}
-        </button>
+        </Button>
       </form>
 
       {error && (
-        <p className="text-sm text-error">{error}</p>
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
       {previewLoading && (
-        <div className="flex items-center gap-2 text-sm text-text-tertiary">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3 w-3 animate-spin" />
           Loading preview...
         </div>

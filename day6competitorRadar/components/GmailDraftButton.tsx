@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Mail, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import type { CompetitorAnalysis, Weakness } from '@/types'
 
 function formatAnalysisForEmail(analysis: CompetitorAnalysis): { subject: string; body: string } {
@@ -61,17 +62,19 @@ export function GmailDraftButton({ analysis }: { analysis: CompetitorAnalysis })
   }
 
   return (
-    <button
+    <Button
+      variant="outline"
+      size="sm"
       onClick={handleClick}
       disabled={loading}
-      className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-raised disabled:opacity-50"
+      className="gap-2"
     >
       {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
       ) : (
-        <Mail className="h-4 w-4" />
+        <Mail className="h-3.5 w-3.5" />
       )}
-      Draft intel report
-    </button>
+      Draft report
+    </Button>
   )
 }
