@@ -7,6 +7,7 @@
 
 # env files
 .env*
+!.env.local.example
 
 # misc
 .DS_Store
