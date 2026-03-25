@@ -1,18 +1,16 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { BackToHub } from "@/components/shared/BackToHub";
 
-export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login?redirectTo=/day2/dashboard");
-  }
-
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--background)" }}>
-      {children}
+    <div
+      style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--background)" }}
+      data-day="2"
+    >
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+        <BackToHub label="Back to 30 in 30" />
+      </div>
+      <div style={{ flex: 1, overflow: "auto" }}>{children}</div>
     </div>
   );
 }

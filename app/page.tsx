@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { DAYS, type DayConfig } from "@/lib/days-config";
+import { createSupabaseServer } from "@/lib/supabase/server";
+import { SignOutButton } from "@/components/shared/SignOutButton";
 
 function DayCard({ day }: { day: DayConfig }) {
   const isLive = day.status === "live";
@@ -83,7 +85,12 @@ function DayCardContent({ day }: { day: DayConfig }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const liveDays = DAYS.filter((d) => d.status === "live");
   const comingSoon = DAYS.filter((d) => d.status === "coming-soon");
 
@@ -91,22 +98,32 @@ export default function HomePage() {
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <header className="border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-6xl mx-auto px-6 py-8">
-          <h1
-            className="text-4xl mb-2"
-            style={{ fontFamily: "var(--font-serif)", color: "var(--foreground)" }}
-          >
-            30 in 30
-          </h1>
-          <p style={{ color: "var(--text-secondary)" }}>
-            30 AI-powered apps built in 30 days. One stack, shipping daily.
-          </p>
-          <div className="flex gap-4 mt-4">
-            <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
-              <span style={{ color: "#22C55E" }}>{liveDays.length}</span> shipped
-            </span>
-            <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
-              {comingSoon.length} remaining
-            </span>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1
+                className="text-4xl mb-2"
+                style={{ fontFamily: "var(--font-serif)", color: "var(--foreground)" }}
+              >
+                30 in 30
+              </h1>
+              <p style={{ color: "var(--text-secondary)" }}>
+                30 AI-powered apps built in 30 days. One stack, shipping daily.
+              </p>
+              <div className="flex gap-4 mt-4">
+                <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
+                  <span style={{ color: "#22C55E" }}>{liveDays.length}</span> shipped
+                </span>
+                <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
+                  {comingSoon.length} remaining
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
+                {user?.email}
+              </span>
+              <SignOutButton />
+            </div>
           </div>
         </div>
       </header>

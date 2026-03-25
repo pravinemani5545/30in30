@@ -1,14 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// All day routes require auth — login once to access the whole site
-const authRequiredPrefixes = ["/day"];
-
-// API routes that are explicitly public (no auth needed)
-const publicApiPaths = [
-  "/api/day4/unsubscribe",
-  "/api/day4/cron",
-];
+// Paths that are always public (no auth needed)
+const publicPaths = ["/login", "/auth/callback"];
+const publicApiPaths = ["/api/day4/unsubscribe", "/api/day4/cron"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
@@ -43,18 +38,14 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Check if this is a protected page route
-  const isProtectedPage = authRequiredPrefixes.some((prefix) =>
-    path.startsWith(prefix)
-  );
-
-  // Check if this is a protected API route (all /api/dayN/ except explicitly public)
-  const isApiRoute = path.startsWith("/api/day");
+  // Check if this path is public
+  const isPublicPage = publicPaths.some((p) => path.startsWith(p));
   const isPublicApi = publicApiPaths.some((p) => path.startsWith(p));
-  const isProtectedApi = isApiRoute && !isPublicApi;
+  const isStaticAsset = path.startsWith("/_next");
 
-  if (!user && (isProtectedPage || isProtectedApi)) {
-    if (isProtectedApi) {
+  // Everything except public paths and assets requires auth
+  if (!user && !isPublicPage && !isPublicApi && !isStaticAsset) {
+    if (path.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const loginUrl = new URL("/login", request.url);

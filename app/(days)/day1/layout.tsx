@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-export const dynamic = "force-dynamic";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/day1/Sidebar";
 import { Header } from "@/components/day1/Header";
@@ -16,14 +13,11 @@ export default async function Day1Layout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login?redirectTo=/day1/journal");
-
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" data-day="1">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header userEmail={user.email} />
-        {/* pb-16 on mobile reserves space above the bottom nav */}
+        <Header userEmail={user?.email} />
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>
       </div>
       <BottomNav />

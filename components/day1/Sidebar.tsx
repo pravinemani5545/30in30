@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, List } from "lucide-react";
+import { BookOpen, List, ArrowLeft } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/day1/journal", label: "Journal", icon: BookOpen },
@@ -14,6 +14,15 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-52 shrink-0 border-r border-border bg-card/50 min-h-screen px-3 py-6 gap-1">
+      {/* Back to hub */}
+      <Link
+        href="/"
+        className="flex items-center gap-1.5 px-3 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        All Days
+      </Link>
+
       {/* Brand */}
       <div className="px-3 mb-6">
         <span className="font-serif text-xl text-foreground">ClaudeJournal</span>
