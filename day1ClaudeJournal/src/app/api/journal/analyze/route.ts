@@ -61,11 +61,12 @@ export async function POST(request: Request) {
 
   const userPrompt = `Please analyze this journal entry transcript:\n\n${transcript}`;
 
-  const geminiSchema = {
+  const geminiSchema: import("@google/generative-ai").ResponseSchema = {
     type: SchemaType.OBJECT,
     properties: {
       mood: {
         type: SchemaType.STRING,
+        format: "enum",
         enum: ["happy", "sad", "anxious", "reflective", "energized", "neutral", "frustrated", "grateful"],
         description: "The primary emotional tone of the entry",
       },
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
             description: { type: SchemaType.STRING, description: "What happened" },
             significance: {
               type: SchemaType.STRING,
+              format: "enum",
               enum: ["high", "medium", "low"],
               description: "How significant this event seems to the person",
             },

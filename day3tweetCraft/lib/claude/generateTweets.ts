@@ -1,13 +1,14 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from "@google/generative-ai";
 import type { ClaudeGenerateOutput, ParsedArticle } from "@/types";
 import { SYSTEM_PROMPT, buildUserPrompt } from "./prompts";
 
-const tweetVariationSchema = {
+const tweetVariationSchema: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
     variationNumber: { type: SchemaType.INTEGER },
     tweetType: {
       type: SchemaType.STRING,
+      format: "enum",
       enum: ["hook", "story", "stat", "contrarian", "listicle"],
     },
     content: { type: SchemaType.STRING },
@@ -35,7 +36,7 @@ const tweetVariationSchema = {
   ],
 };
 
-const generateOutputSchema = {
+const generateOutputSchema: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
     articleSummary: { type: SchemaType.STRING },

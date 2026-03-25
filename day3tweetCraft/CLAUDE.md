@@ -29,9 +29,8 @@ Paste a blog post URL → TweetCraft fetches + parses the article server-side
 - Read node_modules/next/dist/docs/ before writing any Next.js code
 
 ## MANDATORY before writing any code
-1. Read: view /mnt/skills/public/frontend-design/SKILL.md
-2. Read: view /mnt/skills/public/product-self-knowledge/SKILL.md
-3. Context7: Next.js 16, @supabase/ssr, @anthropic-ai/sdk, Tailwind v4, cheerio
+1. Skills auto-load from .claude/skills/ — /frontend-design and /product-self-knowledge
+2. Context7: Next.js 16, @supabase/ssr, @anthropic-ai/sdk, Tailwind v4, cheerio
 
 ## Dev commands
 pnpm dev          # start dev server

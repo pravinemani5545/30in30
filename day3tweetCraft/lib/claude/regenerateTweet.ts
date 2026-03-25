@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from "@google/generative-ai";
 import type { TweetType } from "@/types";
 import { SYSTEM_PROMPT, buildRegeneratePrompt } from "./prompts";
 
@@ -15,11 +15,12 @@ interface SingleTweetOutput {
   potentialWeakness: string;
 }
 
-const singleTweetSchema = {
+const singleTweetSchema: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
     tweetType: {
       type: SchemaType.STRING,
+      format: "enum",
       enum: ["hook", "story", "stat", "contrarian", "listicle"],
     },
     content: { type: SchemaType.STRING },

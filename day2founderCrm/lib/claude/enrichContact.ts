@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from "@google/generative-ai";
 import type { RawProfileData, EnrichmentResult } from "@/types";
 import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/claude/prompts";
 
 // Gemini response schema (equivalent to the previous Zod schema)
-const responseSchema = {
+const responseSchema: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
     person: {
@@ -42,6 +42,7 @@ const responseSchema = {
         properties: {
           tone: {
             type: SchemaType.STRING,
+            format: "enum",
             enum: ["warm", "direct", "casual"],
           },
           message: { type: SchemaType.STRING },
@@ -51,6 +52,7 @@ const responseSchema = {
     },
     enrichmentConfidence: {
       type: SchemaType.STRING,
+      format: "enum",
       enum: ["high", "medium", "low"],
     },
     enrichmentNotes: { type: SchemaType.STRING },
