@@ -1,4 +1,5 @@
 import type { PageContent } from "@/types/day8";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface ParseResult {
   pages: PageContent[];
@@ -14,16 +15,31 @@ export async function parsePdf(buffer: Buffer): Promise<ParseResult> {
 
   const result = await pdfParse(buffer);
 
-  if (!result.text || result.text.trim().length === 0) {
+  // If pdf-parse extracted text, use it
+  if (result.text && result.text.trim().length > 50) {
+    return buildResult(result.text, result.numpages, result.info?.Title);
+  }
+
+  // Fallback: use Gemini Vision OCR for image-based PDFs
+  console.log("[parse] pdf-parse returned no text, falling back to Gemini OCR");
+  const ocrText = await extractWithGeminiOcr(buffer, result.numpages);
+
+  if (!ocrText || ocrText.trim().length === 0) {
     throw new Error(
-      "This PDF has no selectable text. It may be a scanned document. " +
-        "Please upload a PDF with selectable text, or use OCR software first."
+      "Could not extract text from this PDF. It may be corrupted or contain only images that could not be processed."
     );
   }
 
-  // pdf-parse v1 returns full text. Split by form feed character for per-page text.
+  return buildResult(ocrText, result.numpages, null);
+}
+
+function buildResult(
+  fullText: string,
+  numPages: number,
+  title: string | null | undefined
+): ParseResult {
   const pages: PageContent[] = [];
-  const rawPages = result.text.split(/\f/);
+  const rawPages = fullText.split(/\f/);
   let pageNumber = 1;
 
   for (const text of rawPages) {
@@ -36,22 +52,49 @@ export async function parsePdf(buffer: Buffer): Promise<ParseResult> {
 
   // If no form feeds found, use full text as single page
   if (pages.length === 0) {
-    pages.push({ pageNumber: 1, text: result.text.trim() });
+    pages.push({ pageNumber: 1, text: fullText.trim() });
   }
 
-  const wordCount = result.text
+  const wordCount = fullText
     .split(/\s+/)
     .filter((w: string) => w.length > 0).length;
 
-  const title =
-    result.info?.Title && typeof result.info.Title === "string"
-      ? result.info.Title
-      : null;
-
   return {
     pages,
-    pageCount: result.numpages,
+    pageCount: numPages,
     wordCount,
-    title,
+    title: title && typeof title === "string" ? title : null,
   };
+}
+
+/**
+ * Use Gemini 2.5 Flash to OCR an image-based PDF.
+ * Sends the full PDF as inline data and asks for text extraction.
+ */
+async function extractWithGeminiOcr(
+  buffer: Buffer,
+  numPages: number
+): Promise<string> {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const base64 = buffer.toString("base64");
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType: "application/pdf",
+        data: base64,
+      },
+    },
+    `Extract ALL text from every page of this ${numPages}-page PDF document. ` +
+      "For each page, output the page marker PAGE_BREAK followed by all text on that page. " +
+      "Preserve paragraph structure and formatting. " +
+      "Output ONLY the raw text — no commentary, no summaries, no markdown formatting.",
+  ]);
+
+  const text = result.response.text();
+
+  // Convert PAGE_BREAK markers to form feed characters for consistent parsing
+  return text.replace(/PAGE_BREAK/g, "\f");
 }
