@@ -1,13 +1,13 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SYSTEM_PROMPT, buildQueryPrompt } from "./prompts";
 
-let client: Anthropic | null = null;
+let genAI: GoogleGenerativeAI | null = null;
 
-function getClient(): Anthropic {
-  if (!client) {
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getClient(): GoogleGenerativeAI {
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   }
-  return client;
+  return genAI;
 }
 
 interface AnswerResult {
@@ -16,30 +16,24 @@ interface AnswerResult {
 }
 
 /**
- * Call Claude Sonnet with grounded context and return the answer.
+ * Call Gemini 2.0 Flash with grounded context and return the answer.
  * Handles NO_RELEVANT_CONTENT detection as a second empty-retrieval path.
  */
 export async function getAnswer(
   contextString: string,
   question: string
 ): Promise<AnswerResult> {
-  const anthropic = getClient();
+  const client = getClient();
+  const model = client.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: SYSTEM_PROMPT,
+  });
+
   const userPrompt = buildQueryPrompt(contextString, question);
+  const result = await model.generateContent(userPrompt);
+  const text = result.response.text().trim();
 
-  const response = await anthropic.messages.create(
-    {
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-    },
-    { signal: AbortSignal.timeout(30000) }
-  );
-
-  const text =
-    response.content[0].type === "text" ? response.content[0].text : "";
-
-  if (text.trim() === "NO_RELEVANT_CONTENT") {
+  if (text === "NO_RELEVANT_CONTENT") {
     return { answer: null, noRelevantContent: true };
   }
 

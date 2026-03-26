@@ -4,7 +4,7 @@ import type { RetrievedChunk } from "@/types/day8";
 /** Cosine similarity threshold — chunks below this are discarded.
  *  Fix 2: eliminates irrelevant context that confuses Claude.
  *  Empirically chosen: 0.7 was the sweet spot across 50 test queries. */
-export const SIMILARITY_THRESHOLD = 0.7;
+export const SIMILARITY_THRESHOLD = 0.25;
 
 /** Maximum chunks to retrieve before budget trimming */
 export const DEFAULT_MATCH_COUNT = 10;
