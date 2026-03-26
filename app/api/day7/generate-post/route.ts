@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       .eq('id', postId)
 
     const result = streamText({
-      model: google('gemini-2.0-flash'),
+      model: google('gemini-2.5-flash'),
       system: BLOG_SYSTEM_PROMPT,
       prompt: buildBlogPrompt(transcript, durationSeconds ?? 180),
       maxOutputTokens: 2500,
