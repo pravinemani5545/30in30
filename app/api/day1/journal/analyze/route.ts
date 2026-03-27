@@ -132,7 +132,7 @@ export async function POST(request: Request) {
   let analyzed: ReturnType<typeof analyzedEntrySchema.parse>;
   try {
     const model = getGemini().getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       systemInstruction: systemPromptText,
       generationConfig: {
         responseMimeType: "application/json",

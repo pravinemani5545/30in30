@@ -89,7 +89,7 @@ export async function generateTweets(
   const startedAt = Date.now();
 
   const model = gemini.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",

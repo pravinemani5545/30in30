@@ -10,6 +10,8 @@ import {
 } from "@/lib/day9/search/cache";
 import { synthesizeBriefing } from "@/lib/day9/claude/synthesize";
 
+export const maxDuration = 60;
+
 // POST: Auto-generate briefing via webhook (Day 29 integration)
 export async function POST(request: Request) {
   // Verify webhook secret

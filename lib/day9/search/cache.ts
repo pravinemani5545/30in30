@@ -51,7 +51,14 @@ export async function getCachedResults(
   }
 
   const row = data as CachedRow;
-  console.log(`[cache] Hit for key=${cacheKey.slice(0, 12)}...`);
+
+  // Skip cache hits with empty results (e.g. from previous failures)
+  if (!row.raw_results || row.raw_results.length === 0) {
+    console.log(`[cache] Skipping empty cache for key=${cacheKey.slice(0, 12)}...`);
+    return null;
+  }
+
+  console.log(`[cache] Hit for key=${cacheKey.slice(0, 12)}... results=${row.raw_results.length}`);
   return { results: row.raw_results, queryCount: row.query_count };
 }
 

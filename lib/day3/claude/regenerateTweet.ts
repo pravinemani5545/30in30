@@ -82,7 +82,7 @@ export async function regenerateTweet(
   const contentSnippet = article.mainContent.slice(0, 2000);
 
   const model = gemini.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",

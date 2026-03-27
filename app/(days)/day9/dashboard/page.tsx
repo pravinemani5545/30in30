@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Briefcase, LogOut, Menu, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
@@ -31,6 +31,30 @@ export default function DashboardPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const realtimeState = useBriefingRealtime(pendingBriefingId);
+
+  // When Realtime status changes to "complete", load the full briefing
+  useEffect(() => {
+    if (realtimeState.status === "complete" && pendingBriefingId) {
+      fetch(`/api/day9/briefings/${pendingBriefingId}`)
+        .then((r) => r.json())
+        .then((briefing: Briefing) => {
+          setActiveBriefing(briefing);
+          setPendingBriefingId(null);
+          setFormInputs(null);
+          addBriefing({
+            id: briefing.id,
+            person_name: briefing.person_name,
+            company_name: briefing.company_name,
+            meeting_context: briefing.meeting_context,
+            created_at: briefing.created_at,
+            was_cached: briefing.was_cached,
+            status: briefing.status,
+          });
+          toast.success("Briefing generated successfully");
+        })
+        .catch(() => toast.error("Failed to load completed briefing"));
+    }
+  }, [realtimeState.status, pendingBriefingId, addBriefing]);
 
   const handleGenerate = useCallback(
     async (personName: string, companyName: string, meetingContext: string) => {
@@ -106,7 +130,7 @@ export default function DashboardPage() {
   }
 
   const showResearchStatus =
-    isGenerating && formInputs && !activeBriefing;
+    (isGenerating || pendingBriefingId) && formInputs && !activeBriefing;
 
   return (
     <div data-day="9" className="flex flex-col h-screen bg-[var(--background)]">

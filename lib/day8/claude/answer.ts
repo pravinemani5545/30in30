@@ -25,7 +25,7 @@ export async function getAnswer(
 ): Promise<AnswerResult> {
   const client = getClient();
   const model = client.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
   });
 

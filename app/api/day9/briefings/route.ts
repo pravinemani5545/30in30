@@ -12,6 +12,8 @@ import { aggregateResults } from "@/lib/day9/search/aggregate";
 import { synthesizeBriefing } from "@/lib/day9/claude/synthesize";
 import type { SearchQuery, SearchResult } from "@/types/day9";
 
+export const maxDuration = 60;
+
 const DAILY_RATE_LIMIT = 10;
 const SERPER_URL = "https://google.serper.dev/search";
 
@@ -102,6 +104,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log(`[briefings] Generating for: ${personName} @ ${companyName}`);
+
     const cacheKey = await computeCacheKey(personName, companyName);
 
     // Create briefing record (queued)
@@ -150,20 +154,26 @@ export async function POST(request: Request) {
 
       // Execute all 3 searches in parallel with individual Realtime updates
       const stepFields = ["search_1_done", "search_2_done", "search_3_done"];
+      console.log(`[briefings] Executing ${queries.length} searches...`);
       const settled = await Promise.allSettled(
         queries.map((q, i) => executeAndTrack(q, stepFields[i], briefingId, supabase))
       );
 
       searchMs = Date.now() - searchStart;
+      console.log(`[briefings] Searches done in ${searchMs}ms`);
 
       const resultSets = settled.map((r) => (r.status === "fulfilled" ? r.value : []));
+      console.log(`[briefings] Results per query: ${resultSets.map(r => r.length).join(", ")}`);
       const partial = settled.some((r) => r.status === "rejected" || (r.status === "fulfilled" && r.value.length === 0));
       const aggregated = aggregateResults(resultSets, queries.length, partial);
       searchResults = aggregated.results;
       queryCount = aggregated.queryCount;
+      console.log(`[briefings] Aggregated: ${searchResults.length} results, partial=${partial}`);
 
-      // Store in cache
-      await setCachedResults(cacheKey, personName, companyName, searchResults, queryCount, supabase);
+      // Store in cache (only if we have results)
+      if (searchResults.length > 0) {
+        await setCachedResults(cacheKey, personName, companyName, searchResults, queryCount, supabase);
+      }
     }
 
     // No results at all
@@ -176,12 +186,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No search results found", briefingId }, { status: 422 });
     }
 
-    // Synthesize with Claude
+    // Synthesize with Gemini
+    console.log(`[briefings] Starting synthesis with ${searchResults.length} results...`);
     await supabase.from("briefings").update({ status: "synthesising" }).eq("id", briefingId);
 
     const synthesisStart = Date.now();
     const output = await synthesizeBriefing(personName, companyName, meetingContext, searchResults, wasCached);
     const synthesisMs = Date.now() - synthesisStart;
+    console.log(`[briefings] Synthesis done in ${synthesisMs}ms, quality=${output.dataQuality}`);
 
     // Update briefing with complete results
     await supabase.from("briefings").update({

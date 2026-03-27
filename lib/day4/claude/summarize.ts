@@ -21,7 +21,7 @@ export async function summarizeStory(
 ): Promise<SummarizedStory> {
   try {
     const model = getGemini().getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         responseMimeType: "application/json",

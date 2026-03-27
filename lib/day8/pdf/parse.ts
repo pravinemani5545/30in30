@@ -84,7 +84,7 @@ async function extractWithGeminiOcr(
 ): Promise<string> {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     generationConfig: {
       maxOutputTokens: 65536,
     },

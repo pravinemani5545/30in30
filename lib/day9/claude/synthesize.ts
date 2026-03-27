@@ -111,12 +111,12 @@ export async function synthesizeBriefing(
   const startMs = Date.now();
 
   const model = getClient().getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: geminiSchema,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192,
     },
   });
 
