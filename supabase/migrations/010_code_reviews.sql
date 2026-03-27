@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS code_reviews (
   total_lines        INTEGER,
   summary            TEXT,
   findings           JSONB NOT NULL DEFAULT '[]',
-  ai_model_used      TEXT NOT NULL DEFAULT 'gemini-2.5-flash-preview-05-20',
+  ai_model_used      TEXT NOT NULL DEFAULT 'gemini-2.5-flash',
   review_ms          INTEGER,
   error_message      TEXT,
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -126,7 +126,7 @@ export async function POST(request: Request) {
         medium_count: counts.medium,
         low_count: counts.low,
         review_ms: Date.now() - start,
-        ai_model_used: "gemini-2.5-flash-preview-05-20",
+        ai_model_used: "gemini-2.5-flash",
       })
       .eq("id", pendingReview.id)
       .select()
