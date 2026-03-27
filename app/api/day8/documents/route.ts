@@ -95,9 +95,11 @@ export async function POST(request: Request) {
         .eq("id", docId);
 
       // Phase 1: Parse PDF
+      console.log(`[upload] Phase 1: Parsing PDF (${buffer.length} bytes)...`);
       const parseStart = Date.now();
       const parseResult = await parsePdf(buffer);
       const parseMs = Date.now() - parseStart;
+      console.log(`[upload] Parse done in ${parseMs}ms: ${parseResult.pages.length} pages, ${parseResult.wordCount} words`);
 
       await serviceClient
         .from("documents")

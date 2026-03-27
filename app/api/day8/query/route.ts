@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     }
 
     const { question, documentId } = parsed.data;
+    console.log(`[query] question="${question}" doc=${documentId}`);
 
     // Verify user owns the document
     const { data: doc } = await supabase
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!doc) {
+      console.log("[query] Document not found or not owned by user");
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
@@ -61,6 +63,7 @@ export async function POST(request: Request) {
     }
 
     if (doc.status !== "ready") {
+      console.log(`[query] Document not ready: status=${doc.status}`);
       return NextResponse.json(
         { error: "Document is still processing" },
         { status: 400 }
@@ -70,16 +73,20 @@ export async function POST(request: Request) {
     const queryStart = Date.now();
 
     // Step 1: Embed the question
+    console.log("[query] Step 1: Embedding question...");
     const queryEmbedding = await embedSingle(question);
+    console.log(`[query] Embedding done. Vector length: ${queryEmbedding.length}`);
 
-    // Step 2: Retrieve chunks (Fix 2: threshold-gated)
+    // Step 2: Retrieve chunks
+    console.log("[query] Step 2: Retrieving chunks...");
     const chunks = await retrieveChunks(queryEmbedding, documentId, supabase);
+    console.log(`[query] Retrieved ${chunks.length} chunks`);
 
-    // Step 3: Handle empty retrieval BEFORE calling Claude
+    // Step 3: Handle empty retrieval
     if (chunks.length === 0) {
+      console.log("[query] No chunks passed threshold — returning noRelevantContent");
       const queryMs = Date.now() - queryStart;
 
-      // Save query record
       await serviceClient.from("queries").insert({
         user_id: user.id,
         document_id: documentId,
@@ -97,13 +104,18 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step 4: Build context with budget management (Fix 3)
+    // Step 4: Build context
+    console.log("[query] Step 4: Building context...");
     const ragContext = buildContext(chunks);
+    console.log(`[query] Context built: ${ragContext.selectedChunks.length} chunks, ${ragContext.contextString.length} chars`);
 
-    // Step 5: Get answer from Claude
+    // Step 5: Get answer from Gemini
+    console.log("[query] Step 5: Getting answer from Gemini...");
     const answerResult = await getAnswer(ragContext.contextString, question);
+    console.log(`[query] Answer received: noRelevant=${answerResult.noRelevantContent} len=${answerResult.answer?.length ?? 0}`);
 
     const queryMs = Date.now() - queryStart;
+    console.log(`[query] Total time: ${queryMs}ms`);
 
     // Save query record
     await serviceClient.from("queries").insert({
