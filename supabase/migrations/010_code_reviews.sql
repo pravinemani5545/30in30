@@ -1,8 +1,6 @@
 -- Day 10: AICodeReviewer
 -- Additive migration — does not touch existing tables
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Severity and category enums (prefixed to avoid collision)
 DO $$ BEGIN
   CREATE TYPE finding_severity AS ENUM ('critical','high','medium','low');
@@ -20,7 +18,7 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 CREATE TABLE IF NOT EXISTS code_reviews (
-  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id            UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   code_snippet       TEXT NOT NULL,
   detected_language  TEXT NOT NULL,
