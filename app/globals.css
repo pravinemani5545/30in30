@@ -154,6 +154,25 @@
 }
 .skeleton-pulse { animation: skeleton-pulse 1.8s ease-in-out infinite; }
 
+/* ─── Day 10 AICodeReviewer Severity Colours ─────────────── */
+[data-day="10"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --severity-critical-bg: rgb(239 68 68 / 0.12);
+  --severity-critical-border: #EF4444;
+  --severity-critical-text: #EF4444;
+  --severity-high-bg: rgb(249 115 22 / 0.12);
+  --severity-high-border: #F97316;
+  --severity-high-text: #F97316;
+  --severity-medium-bg: rgb(232 160 32 / 0.10);
+  --severity-medium-border: #E8A020;
+  --severity-medium-text: #E8A020;
+  --severity-low-bg: rgb(138 133 128 / 0.10);
+  --severity-low-border: #8A8580;
+  --severity-low-text: #8A8580;
+  --code-bg: #0D0D0D;
+  --code-text: #E2E8F0;
+}
+
 /* ─── Day 9 MeetingPrep Section Accent Colours ──────────── */
 [data-day="9"] {
   --section-background: #8B5CF6;
