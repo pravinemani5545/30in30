@@ -55,40 +55,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Create pending record
-    const { data: pendingReview, error: insertErr } = await supabase
-      .from("code_reviews")
-      .insert({
-        user_id: user.id,
-        code_snippet: code,
-        detected_language: detectedLanguage,
-        status: "pending",
-      })
-      .select("id")
-      .single();
-
-    if (insertErr || !pendingReview) {
-      console.error("[day10/review] insert error:", insertErr?.message);
-      return NextResponse.json(
-        { error: "Failed to create review" },
-        { status: 500 }
-      );
-    }
-
-    // 5. Run Gemini review
+    // 4. Run Gemini review FIRST (before any DB write)
+    const start = Date.now();
     let reviewResult;
     try {
       reviewResult = await reviewCode(code, detectedLanguage, user.id);
     } catch (err) {
-      // Update status to failed
-      await supabase
-        .from("code_reviews")
-        .update({
-          status: "failed",
-          error_message:
-            err instanceof Error ? err.message : "Review failed",
-        })
-        .eq("id", pendingReview.id);
+      // Insert a failed record for history
+      await supabase.from("code_reviews").insert({
+        user_id: user.id,
+        code_snippet: code,
+        detected_language: detectedLanguage,
+        status: "failed",
+        error_message: err instanceof Error ? err.message : "Review failed",
+        ai_model_used: "gemini-2.5-flash",
+      });
 
       console.error(
         "[day10/review] gemini error:",
@@ -99,8 +80,9 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+    const reviewMs = Date.now() - start;
 
-    // 6. Count findings by severity
+    // 5. Count findings by severity
     const counts: Record<FindingSeverity, number> = {
       critical: 0,
       high: 0,
@@ -111,11 +93,13 @@ export async function POST(request: Request) {
       counts[f.severity]++;
     }
 
-    // 7. Update record with results
-    const start = Date.now();
-    const { data: updated, error: updateErr } = await supabase
+    // 6. Insert complete record in one shot (no UPDATE needed — no UPDATE RLS policy)
+    const { data: saved, error: insertErr } = await supabase
       .from("code_reviews")
-      .update({
+      .insert({
+        user_id: user.id,
+        code_snippet: code,
+        detected_language: detectedLanguage,
         status: "complete",
         confirmed_language: reviewResult.confirmedLanguage,
         total_lines: reviewResult.totalLines,
@@ -125,18 +109,21 @@ export async function POST(request: Request) {
         high_count: counts.high,
         medium_count: counts.medium,
         low_count: counts.low,
-        review_ms: Date.now() - start,
+        review_ms: reviewMs,
         ai_model_used: "gemini-2.5-flash",
       })
-      .eq("id", pendingReview.id)
       .select()
       .single();
 
-    if (updateErr) {
-      console.error("[day10/review] update error:", updateErr.message);
+    if (insertErr || !saved) {
+      console.error("[day10/review] insert error:", insertErr?.message);
+      return NextResponse.json(
+        { error: "Failed to save review" },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ review: updated });
+    return NextResponse.json({ review: saved });
   } catch (error) {
     console.error(
       "[day10/review] error:",
