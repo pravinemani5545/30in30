@@ -87,6 +87,7 @@
 [data-day="7"]  { --accent: #10B981; --accent-hover: #059669; --accent-subtle: rgb(16 185 129 / 0.08); }
 [data-day="8"]  { --accent: #EC4899; --accent-hover: #DB2777; --accent-subtle: rgb(236 72 153 / 0.08); }
 [data-day="9"]  { --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08); }
+[data-day="11"] { --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08); }
 
 @theme inline {
   --color-background:      var(--background);
@@ -198,6 +199,20 @@
   [data-day="9"] .section-objections { page-break-before: auto; }
   [data-day="9"] .verify-badge { border: 1px solid #333 !important; background: #fff3cd !important; color: #333 !important; }
   [data-day="9"] .sources-footer { border-top: 1px solid #333; padding-top: 8px; margin-top: 16px; font-size: 9pt; }
+}
+
+/* ─── Day 11 OutreachGrader Score & Dimension Colours ──── */
+[data-day="11"] {
+  --score-fail:           #EF4444;
+  --score-marginal:       #F97316;
+  --score-good:           #E8A020;
+  --score-strong:         #22C55E;
+  --dim-personalization:  #8B5CF6;
+  --dim-spam:             #EF4444;
+  --dim-cta:              #E8A020;
+  --dim-reading:          #06B6D4;
+  --threshold-line:       #E8A020;
+  --spam-highlight:       rgb(239 68 68 / 0.19);
 }
 
 @media (prefers-reduced-motion: reduce) {
