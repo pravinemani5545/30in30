@@ -67,8 +67,8 @@ export function GradingDashboard() {
   const charCount = email.length;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 max-w-[1280px] mx-auto w-full px-4 py-6">
+    <div>
+      <div className="max-w-[1280px] mx-auto w-full px-4 py-6">
         {/* Header */}
         <div className="mb-6">
           <h1
