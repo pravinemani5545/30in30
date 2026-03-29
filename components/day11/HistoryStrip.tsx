@@ -24,8 +24,6 @@ const RANGE_COLORS: Record<string, string> = {
 };
 
 export function HistoryStrip({ grades, onSelect, activeId }: HistoryStripProps) {
-  if (grades.length === 0) return null;
-
   return (
     <div
       className="border-t px-4 py-3"
@@ -39,56 +37,65 @@ export function HistoryStrip({ grades, onSelect, activeId }: HistoryStripProps) 
           color: "var(--text-tertiary)",
         }}
       >
-        History
+        History {grades.length > 0 && `(${grades.length})`}
       </p>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {grades.map((g) => {
-          const range = getScoreRange(g.overall_score);
-          const color = RANGE_COLORS[range];
-          const isActive = g.id === activeId;
-          const snippet = g.original_email.slice(0, 40).trim();
-          const date = new Date(g.created_at).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
+      {grades.length === 0 ? (
+        <p
+          className="text-xs font-sans py-2"
+          style={{ color: "var(--text-tertiary)" }}
+        >
+          Your graded emails will appear here.
+        </p>
+      ) : (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {grades.map((g) => {
+            const range = getScoreRange(g.overall_score);
+            const color = RANGE_COLORS[range];
+            const isActive = g.id === activeId;
+            const snippet = g.original_email.slice(0, 40).trim();
+            const date = new Date(g.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
 
-          return (
-            <button
-              key={g.id}
-              type="button"
-              onClick={() => onSelect(g.id)}
-              className="shrink-0 rounded-md border px-3 py-2 text-left transition-colors"
-              style={{
-                borderColor: isActive ? color : "var(--border)",
-                background: isActive ? `${color}10` : "var(--surface)",
-                minWidth: "160px",
-                maxWidth: "200px",
-              }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span
-                  className="text-xs font-sans"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  {date}
-                </span>
-                <span
-                  className="text-xs font-sans font-bold ml-auto"
-                  style={{ color }}
-                >
-                  {g.overall_score}/100
-                </span>
-              </div>
-              <p
-                className="text-xs font-sans truncate"
-                style={{ color: "var(--text-secondary)" }}
+            return (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => onSelect(g.id)}
+                className="shrink-0 rounded-md border px-3 py-2 text-left transition-colors"
+                style={{
+                  borderColor: isActive ? color : "var(--border)",
+                  background: isActive ? `${color}10` : "var(--surface)",
+                  minWidth: "160px",
+                  maxWidth: "200px",
+                }}
               >
-                {snippet}...
-              </p>
-            </button>
-          );
-        })}
-      </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="text-xs font-sans"
+                    style={{ color: "var(--text-tertiary)" }}
+                  >
+                    {date}
+                  </span>
+                  <span
+                    className="text-xs font-sans font-bold ml-auto"
+                    style={{ color }}
+                  >
+                    {g.overall_score}/100
+                  </span>
+                </div>
+                <p
+                  className="text-xs font-sans truncate"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {snippet}...
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
