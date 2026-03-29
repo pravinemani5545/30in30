@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Loader2, ArrowRight } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Loader2, ArrowRight, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { EmailGrade } from "@/types/day11";
 import { useGrade } from "@/hooks/day11/useGrade";
@@ -21,6 +21,13 @@ export function GradingDashboard() {
   const { grades: history, refresh: refreshHistory } = useGrades();
 
   const activeGrade = selectedGrade ?? grade;
+
+  // Refresh history whenever a new grade completes
+  useEffect(() => {
+    if (grade) {
+      refreshHistory();
+    }
+  }, [grade, refreshHistory]);
 
   const handleGrade = useCallback(async () => {
     setSelectedGrade(null);
@@ -102,17 +109,9 @@ export function GradingDashboard() {
                     >
                       Original email
                     </span>
-                    <button
-                      type="button"
-                      onClick={handleNewEmail}
-                      className="text-xs font-sans font-bold"
-                      style={{ color: "var(--accent)" }}
-                    >
-                      New email
-                    </button>
                   </div>
                   <div
-                    className="font-sans whitespace-pre-wrap"
+                    className="font-sans whitespace-pre-wrap mb-4 max-h-[400px] overflow-y-auto"
                     style={{
                       fontSize: "14px",
                       lineHeight: "1.6",
@@ -124,6 +123,19 @@ export function GradingDashboard() {
                       spamWords={activeGrade.spam_words_found}
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleNewEmail}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-sans font-bold text-sm border transition-colors"
+                    style={{
+                      borderColor: "var(--accent)",
+                      color: "var(--accent)",
+                      backgroundColor: "rgb(232 160 32 / 0.08)",
+                    }}
+                  >
+                    <Plus size={16} />
+                    Grade Another Email
+                  </button>
                 </>
               ) : (
                 <>
