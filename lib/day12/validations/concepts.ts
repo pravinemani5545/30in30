@@ -38,10 +38,10 @@ export const ConceptSchema = z.object({
   driver: z.enum(["curiosity_gap", "pattern_interrupt", "emotion_signal"]),
   conceptName: z.string().min(1),
   isPredictedWinner: z.boolean(),
-  textOverlay: z.array(z.string()).min(1).max(4),
-  colourPalette: z.array(ColourSchema).min(3).max(4),
+  textOverlay: z.array(z.string()).min(1).max(8),    // allow over, post-process trims to 4
+  colourPalette: z.array(ColourSchema).min(3).max(6), // allow over, post-process trims to 4
   paletteRationale: z.string().min(1),
-  compositionSteps: z.array(z.string()).min(4).max(7),
+  compositionSteps: z.array(z.string()).min(3).max(10), // allow over, post-process trims to 7
   abNote: z.string().min(1),
 });
 

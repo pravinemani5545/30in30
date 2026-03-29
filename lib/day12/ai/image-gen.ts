@@ -13,11 +13,18 @@ function getGenAI() {
   return genAI;
 }
 
-const IMAGE_MODEL = "gemini-2.5-flash-image";
+// imagen-4.0-generate-001 is the dedicated image generation model
+// Uses generateImages API — purpose-built, cheapest at $0.02/image
+const IMAGE_MODEL = "imagen-4.0-generate-001";
+
+export interface GeneratedImage {
+  base64: string;
+  mimeType: string;
+}
 
 /**
  * Generate a thumbnail mockup image from composition instructions.
- * Returns base64-encoded PNG data.
+ * Returns base64-encoded image data with mime type.
  */
 export async function generateThumbnailImage(
   conceptName: string,
@@ -25,7 +32,7 @@ export async function generateThumbnailImage(
   compositionSteps: string[],
   paletteDescription: string,
   videoTitle: string,
-): Promise<string> {
+): Promise<GeneratedImage> {
   const ai = getGenAI();
 
   const prompt = `Generate a YouTube thumbnail mockup image (1280x720 resolution feel).
@@ -41,32 +48,26 @@ ${compositionSteps.map((s, i) => `${i + 1}. ${s}`).join("\n")}
 
 Style: Clean, professional YouTube thumbnail. Bold readable text overlay. High contrast. The text "${textOverlay.join(" ")}" must be prominently visible on the thumbnail.`;
 
-  const response = await ai.models.generateContent({
+  const response = await ai.models.generateImages({
     model: IMAGE_MODEL,
-    contents: prompt,
+    prompt,
     config: {
-      responseModalities: ["IMAGE"],
-      imageConfig: {
-        aspectRatio: "16:9",
-      },
+      numberOfImages: 1,
+      aspectRatio: "16:9",
     },
   });
 
-  const candidates = response.candidates;
-  if (!candidates || candidates.length === 0) {
+  if (!response.generatedImages || response.generatedImages.length === 0) {
     throw new Error("No image generated");
   }
 
-  const parts = candidates[0].content?.parts;
-  if (!parts) {
-    throw new Error("No content parts in response");
+  const imageBytes = response.generatedImages[0].image?.imageBytes;
+  if (!imageBytes) {
+    throw new Error("No image data in response");
   }
 
-  for (const part of parts) {
-    if (part.inlineData?.data) {
-      return part.inlineData.data;
-    }
-  }
-
-  throw new Error("No image data in response");
+  return {
+    base64: imageBytes,
+    mimeType: response.generatedImages[0].image?.mimeType ?? "image/png",
+  };
 }

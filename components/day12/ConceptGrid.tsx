@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { ThumbConcept } from "@/types/day12";
 import { ConceptCard } from "./ConceptCard";
@@ -31,13 +32,15 @@ export function ConceptGrid({
   onGenerateAllImages,
   anyImageLoading,
 }: ConceptGridProps) {
-  const prefersReducedMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [reducedMotion, setReducedMotion] = useState(true);
 
-  const allHaveImages = concepts.every(
-    (_, i) => images[i]?.url,
-  );
+  useEffect(() => {
+    setReducedMotion(
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
+
+  const allHaveImages = concepts.every((_, i) => images[i]?.url);
 
   return (
     <div className="space-y-4">
@@ -55,7 +58,7 @@ export function ConceptGrid({
             />
           );
 
-          if (prefersReducedMotion) return card;
+          if (reducedMotion) return card;
 
           return (
             <motion.div

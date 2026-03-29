@@ -70,7 +70,7 @@ export async function POST(
       .join(", ") + ". " + concept.paletteRationale;
 
     const start = Date.now();
-    const base64Image = await generateThumbnailImage(
+    const result = await generateThumbnailImage(
       concept.conceptName,
       concept.textOverlay,
       concept.compositionSteps,
@@ -84,7 +84,7 @@ export async function POST(
     );
 
     return NextResponse.json({
-      image: `data:image/png;base64,${base64Image}`,
+      image: `data:${result.mimeType};base64,${result.base64}`,
       conceptIndex,
     });
   } catch (err) {

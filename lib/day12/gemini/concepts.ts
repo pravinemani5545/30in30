@@ -32,12 +32,14 @@ export async function generateConcepts(
 
   const output = parsed.data;
 
-  // Post-process: trim text overlay to max 4 words
+  // Post-process: enforce strict limits (Zod allows over to avoid rejecting otherwise valid output)
   for (const concept of output.concepts) {
     if (concept.textOverlay.length > 4) {
       concept.textOverlay = concept.textOverlay.slice(0, 4);
     }
-    // Trim composition steps to max 7
+    if (concept.colourPalette.length > 4) {
+      concept.colourPalette = concept.colourPalette.slice(0, 4);
+    }
     if (concept.compositionSteps.length > 7) {
       concept.compositionSteps = concept.compositionSteps.slice(0, 7);
     }
