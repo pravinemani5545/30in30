@@ -215,6 +215,14 @@ function LoginForm() {
               </svg>
               Continue with Google
             </button>
+
+            <Link
+              href={redirectTo}
+              className="block text-center mt-4 text-sm transition-colors hover:underline"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              Continue as guest
+            </Link>
           </div>
         )}
       </div>

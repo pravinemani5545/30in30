@@ -1,22 +1,14 @@
 import { NextResponse } from "next/server";
 import { getGemini } from "@/lib/day1/gemini";
 import { SchemaType } from "@google/generative-ai";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/auth/guest";
 import { analyzeRequestSchema, analyzedEntrySchema } from "@/lib/day1/validations/journal";
 
 const RATE_LIMIT = 20;
 
 export async function POST(request: Request) {
-  // 1. Authenticate
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // 1. Optional auth (guest access)
+  const { user, supabase, isGuest } = await getOptionalUser();
 
   // 2. Parse + validate body
   let body: unknown;
@@ -34,26 +26,28 @@ export async function POST(request: Request) {
 
   const { transcript, duration_seconds } = parsed.data;
 
-  // 3. Rate limit: max 20 entries per user per day (UTC midnight as cutoff)
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  // 3. Rate limit (authenticated users only)
+  if (!isGuest && supabase && user) {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
-  const { count, error: countError } = await supabase
-    .from("journal_entries")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gte("created_at", today.toISOString());
+    const { count, error: countError } = await supabase
+      .from("journal_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", today.toISOString());
 
-  if (countError) {
-    console.error("[analyze] rate limit check failed:", countError.message);
-    return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
-  }
+    if (countError) {
+      console.error("[analyze] rate limit check failed:", countError.message);
+      return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+    }
 
-  if ((count ?? 0) >= RATE_LIMIT) {
-    return NextResponse.json(
-      { error: `Daily limit reached (${RATE_LIMIT} entries per day).` },
-      { status: 429 }
-    );
+    if ((count ?? 0) >= RATE_LIMIT) {
+      return NextResponse.json(
+        { error: `Daily limit reached (${RATE_LIMIT} entries per day).` },
+        { status: 429 }
+      );
+    }
   }
 
   // 4. Call Gemini API with Structured Outputs
@@ -148,31 +142,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Analysis failed — please try again." }, { status: 503 });
   }
 
-  // 5. Save to Supabase
-  const wordCount = transcript.trim().split(/\s+/).length;
+  // 5. Save to Supabase (authenticated users only)
+  if (!isGuest && supabase && user) {
+    const wordCount = transcript.trim().split(/\s+/).length;
 
-  const { data: entry, error: insertError } = await supabase
-    .from("journal_entries")
-    .insert({
-      user_id: user.id,
-      raw_transcript: transcript,
-      duration_seconds: duration_seconds ?? null,
-      word_count: wordCount,
-      ...analyzed,
-      events: analyzed.events,
-      reflections: analyzed.reflections,
-      gratitude: analyzed.gratitude,
-    })
-    .select("id")
-    .single();
+    const { data: entry, error: insertError } = await supabase
+      .from("journal_entries")
+      .insert({
+        user_id: user.id,
+        raw_transcript: transcript,
+        duration_seconds: duration_seconds ?? null,
+        word_count: wordCount,
+        ...analyzed,
+        events: analyzed.events,
+        reflections: analyzed.reflections,
+        gratitude: analyzed.gratitude,
+      })
+      .select("id")
+      .single();
 
-  if (insertError) {
-    console.error("[analyze] Supabase insert error:", insertError.message);
-    // Return result even if save fails — don't lose user's data
-    return NextResponse.json({ ...analyzed, id: null }, { status: 200 });
+    if (insertError) {
+      console.error("[analyze] Supabase insert error:", insertError.message);
+      return NextResponse.json({ ...analyzed, id: null, saved: false }, { status: 200 });
+    }
+
+    console.info("[analyze] Entry saved:", entry.id, "duration:", duration_seconds);
+    return NextResponse.json({ ...analyzed, id: entry.id, saved: true }, { status: 200 });
   }
 
-  console.info("[analyze] Entry saved:", entry.id, "duration:", duration_seconds);
-
-  return NextResponse.json({ ...analyzed, id: entry.id }, { status: 200 });
+  return NextResponse.json({ ...analyzed, id: null, saved: false }, { status: 200 });
 }

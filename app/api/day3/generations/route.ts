@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/auth/guest";
 
 export async function GET(request: NextRequest) {
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { user, supabase, isGuest } = await getOptionalUser();
+  if (isGuest || !supabase) {
+    return NextResponse.json({ generations: [] });
   }
 
   const { searchParams } = new URL(request.url);

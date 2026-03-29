@@ -12,7 +12,12 @@ export async function GET() {
     const supabase = await createSupabaseServer();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return NextResponse.json({
+        creditsUsed: 0,
+        creditsRemaining: MONTHLY_CREDIT_LIMIT,
+        monthYear: getMonthYear(),
+        limit: MONTHLY_CREDIT_LIMIT,
+      } satisfies CreditsResponse);
     }
 
     const creditsUsed = await getCreditsUsed(user.id, supabase);

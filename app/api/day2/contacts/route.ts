@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/auth/guest";
 import { CreateContactSchema } from "@/lib/day2/validations/contact";
 import { extractLinkedInUsername } from "@/lib/day2/validations/enrich";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createSupabaseServer();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    const { user, supabase, isGuest } = await getOptionalUser();
+    if (isGuest || !supabase) {
+      return NextResponse.json({ contacts: [], total: 0 });
     }
 
     const { searchParams } = new URL(request.url);

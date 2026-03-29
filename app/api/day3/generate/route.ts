@@ -5,7 +5,8 @@ import { z } from "zod";
 import { UrlSchema } from "@/lib/day3/validations/url";
 import { parseUrl, isParseError } from "@/lib/day3/parser";
 import { generateTweets } from "@/lib/day3/claude/generateTweets";
-import { createSupabaseServer, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { getOptionalUser } from "@/lib/auth/guest";
 import type { ParsedArticle, TweetVariation, GenerateResponse } from "@/types/day3";
 import { getDomainFromUrl, getFaviconUrl } from "@/lib/day3/utils";
 import { cleanPastedContent, countWords } from "@/lib/day3/parser/clean";
@@ -41,12 +42,8 @@ function buildArticleFromPaste(url: string, rawContent: string): ParsedArticle {
 const DAILY_GENERATION_LIMIT = 20;
 
 export async function POST(request: NextRequest) {
-  // 1. Authenticate
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Please sign in to generate tweets" }, { status: 401 });
-  }
+  // 1. Optional auth (guest access)
+  const { user, supabase, isGuest } = await getOptionalUser();
 
   // 2. Validate input
   const body = await request.json().catch(() => ({})) as unknown;
@@ -65,20 +62,22 @@ export async function POST(request: NextRequest) {
   const normalizedUrl = urlParsed.data;
   const pastedContent = parsed.data.pastedContent?.trim();
 
-  // 3. Rate limit check
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const { count } = await supabase
-    .from("generations")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gte("created_at", today.toISOString());
+  // 3. Rate limit (authenticated users only)
+  if (!isGuest && supabase && user) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("generations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", today.toISOString());
 
-  if ((count ?? 0) >= DAILY_GENERATION_LIMIT) {
-    return NextResponse.json(
-      { error: "You've hit the daily limit of 20 generations. Come back tomorrow!" },
-      { status: 429 }
-    );
+    if ((count ?? 0) >= DAILY_GENERATION_LIMIT) {
+      return NextResponse.json(
+        { error: "You've hit the daily limit of 20 generations. Come back tomorrow!" },
+        { status: 429 }
+      );
+    }
   }
 
   // 4. Build article — from pasted content OR cache OR fetch
@@ -90,8 +89,8 @@ export async function POST(request: NextRequest) {
     // Manual paste: skip cache entirely, build directly from pasted text
     article = buildArticleFromPaste(normalizedUrl, pastedContent);
   } else {
-    // Check article cache
-    const { data: cachedArticle } = await supabase
+    // Check article cache (use service client — shared table)
+    const { data: cachedArticle } = await serviceSupabase
       .from("article_cache")
       .select("*")
       .eq("normalized_url", normalizedUrl)
@@ -149,24 +148,28 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 6. Create generation record
-  const { data: generation, error: genError } = await supabase
-    .from("generations")
-    .insert({
-      user_id: user.id,
-      article_url: article.url,
-      article_title: article.title,
-      article_domain: article.domain,
-      article_favicon_url: article.faviconUrl,
-      content_quality: article.contentQuality,
-      status: "generating",
-    })
-    .select("id")
-    .single();
+  // 6. Create generation record (authenticated only)
+  let generationId: string | null = null;
+  if (!isGuest && supabase && user) {
+    const { data: generation, error: genError } = await supabase
+      .from("generations")
+      .insert({
+        user_id: user.id,
+        article_url: article.url,
+        article_title: article.title,
+        article_domain: article.domain,
+        article_favicon_url: article.faviconUrl,
+        content_quality: article.contentQuality,
+        status: "generating",
+      })
+      .select("id")
+      .single();
 
-  if (genError || !generation) {
-    console.error("[generate] DB insert failed:", genError);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    if (genError || !generation) {
+      console.error("[generate] DB insert failed:", genError);
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    }
+    generationId = generation.id;
   }
 
   // 7. Call Claude
@@ -174,14 +177,16 @@ export async function POST(request: NextRequest) {
   const generationStart = Date.now();
 
   try {
-    claudeOutput = await generateTweets(article, generation.id);
+    claudeOutput = await generateTweets(article, generationId ?? "guest");
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
     console.error("[generate] Claude call failed:", errMsg);
-    await supabase
-      .from("generations")
-      .update({ status: "failed", error_message: errMsg })
-      .eq("id", generation.id);
+    if (generationId && supabase) {
+      await supabase
+        .from("generations")
+        .update({ status: "failed", error_message: errMsg })
+        .eq("id", generationId);
+    }
 
     const isAbort = err instanceof Error && (
       err.name === "TimeoutError" ||
@@ -201,10 +206,69 @@ export async function POST(request: NextRequest) {
 
   const generationMs = Date.now() - generationStart;
 
-  // 8. Insert tweet_variations rows
-  const variationsToInsert = claudeOutput.tweets.map((tweet) => ({
-    generation_id: generation.id,
-    user_id: user.id,
+  // 8. Save to DB (authenticated only)
+  if (!isGuest && supabase && user && generationId) {
+    const variationsToInsert = claudeOutput.tweets.map((tweet) => ({
+      generation_id: generationId,
+      user_id: user.id,
+      variation_number: tweet.variationNumber,
+      tweet_type: tweet.tweetType,
+      content: tweet.content,
+      character_count: tweet.characterCount,
+      hook_score: tweet.hookScore,
+      hook_analysis: tweet.hookAnalysis,
+      retweet_potential: tweet.retweetPotential,
+      reply_bait: tweet.replyBait,
+      saves_potential: tweet.savesPotential,
+      why_this_works: tweet.whyThisWorks,
+      potential_weakness: tweet.potentialWeakness,
+      is_regenerated: false,
+    }));
+
+    const { data: insertedVariations, error: varError } = await supabase
+      .from("tweet_variations")
+      .insert(variationsToInsert)
+      .select();
+
+    if (varError || !insertedVariations) {
+      await supabase
+        .from("generations")
+        .update({ status: "failed", error_message: "Failed to save variations" })
+        .eq("id", generationId);
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    }
+
+    await supabase
+      .from("generations")
+      .update({
+        status: "completed",
+        tweet_variations: claudeOutput,
+        article_summary: claudeOutput.articleSummary,
+        key_insights: claudeOutput.keyInsights,
+        generation_ms: generationMs,
+      })
+      .eq("id", generationId);
+
+    const response: GenerateResponse = {
+      generationId,
+      articleUrl: article.url,
+      articleTitle: article.title,
+      articleDomain: article.domain,
+      articleFaviconUrl: article.faviconUrl,
+      articleSummary: claudeOutput.articleSummary,
+      keyInsights: claudeOutput.keyInsights,
+      variations: insertedVariations as TweetVariation[],
+      contentQuality: article.contentQuality,
+      cached,
+    };
+
+    return NextResponse.json(response);
+  }
+
+  // Guest: return Claude output without saving
+  const guestVariations = claudeOutput.tweets.map((tweet) => ({
+    id: null,
+    generation_id: null,
     variation_number: tweet.variationNumber,
     tweet_type: tweet.tweetType,
     content: tweet.content,
@@ -219,43 +283,17 @@ export async function POST(request: NextRequest) {
     is_regenerated: false,
   }));
 
-  const { data: insertedVariations, error: varError } = await supabase
-    .from("tweet_variations")
-    .insert(variationsToInsert)
-    .select();
-
-  if (varError || !insertedVariations) {
-    await supabase
-      .from("generations")
-      .update({ status: "failed", error_message: "Failed to save variations" })
-      .eq("id", generation.id);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
-  }
-
-  // 9. Update generation to completed
-  await supabase
-    .from("generations")
-    .update({
-      status: "completed",
-      tweet_variations: claudeOutput,
-      article_summary: claudeOutput.articleSummary,
-      key_insights: claudeOutput.keyInsights,
-      generation_ms: generationMs,
-    })
-    .eq("id", generation.id);
-
-  const response: GenerateResponse = {
-    generationId: generation.id,
+  return NextResponse.json({
+    generationId: null,
     articleUrl: article.url,
     articleTitle: article.title,
     articleDomain: article.domain,
     articleFaviconUrl: article.faviconUrl,
     articleSummary: claudeOutput.articleSummary,
     keyInsights: claudeOutput.keyInsights,
-    variations: insertedVariations as TweetVariation[],
+    variations: guestVariations,
     contentQuality: article.contentQuality,
     cached,
-  };
-
-  return NextResponse.json(response);
+    saved: false,
+  });
 }

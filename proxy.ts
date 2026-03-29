@@ -43,15 +43,8 @@ export async function proxy(request: NextRequest) {
   const isPublicApi = publicApiPaths.some((p) => path.startsWith(p));
   const isStaticAsset = path.startsWith("/_next");
 
-  // Everything except public paths and assets requires auth
-  if (!user && !isPublicPage && !isPublicApi && !isStaticAsset) {
-    if (path.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirectTo", path);
-    return NextResponse.redirect(loginUrl);
-  }
+  // Guest access: all pages and API routes are accessible without auth.
+  // Individual API routes handle auth checks internally (soft auth).
 
   // Redirect authed users away from login
   if (user && path === "/login") {

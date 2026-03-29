@@ -119,10 +119,25 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
-                {user?.email}
-              </span>
-              <SignOutButton />
+              {user ? (
+                <>
+                  <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>
+                    {user.email}
+                  </span>
+                  <SignOutButton />
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-sm px-4 py-2 rounded-md transition-colors"
+                  style={{
+                    background: "var(--accent)",
+                    color: "var(--background)",
+                  }}
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
         </div>

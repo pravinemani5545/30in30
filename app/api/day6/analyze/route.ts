@@ -1,7 +1,8 @@
 export const maxDuration = 60
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServer, createServiceClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { getOptionalUser } from '@/lib/auth/guest'
 import { urlSchema, validateUrlServerSide } from '@/lib/day6/validations/url'
 import { scrapeUrl } from '@/lib/day6/scraper'
 import { analyzeCompetitor } from '@/lib/day6/claude/analyzeCompetitor'
@@ -20,30 +21,25 @@ export async function POST(request: NextRequest) {
     }
     const url = parseResult.data
 
-    // Authenticate
-    const supabase = await createSupabaseServer()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Please sign in to analyse competitor sites.' },
-        { status: 401 }
-      )
-    }
+    // Optional auth (guest access)
+    const { user, supabase, isGuest } = await getOptionalUser()
 
-    // Rate limit: 10/day/user
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const { count } = await supabase
-      .from('competitor_analyses')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', today.toISOString())
+    // Rate limit (authenticated users only)
+    if (!isGuest && supabase && user) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const { count } = await supabase
+        .from('competitor_analyses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', today.toISOString())
 
-    if (count !== null && count >= 10) {
-      return NextResponse.json(
-        { error: "You've analysed 10 competitors today. Come back tomorrow." },
-        { status: 429 }
-      )
+      if (count !== null && count >= 10) {
+        return NextResponse.json(
+          { error: "You've analysed 10 competitors today. Come back tomorrow." },
+          { status: 429 }
+        )
+      }
     }
 
     // SSRF check
@@ -62,28 +58,31 @@ export async function POST(request: NextRequest) {
       .gt('expires_at', new Date().toISOString())
       .single()
 
-    // Create analysis record
-    const { data: analysis, error: insertError } = await supabase
-      .from('competitor_analyses')
-      .insert({
-        user_id: user.id,
-        url,
-        domain: new URL(url).hostname.replace(/^www\./, ''),
-        status: 'scraping',
-      })
-      .select('id')
-      .single()
+    // Create analysis record (authenticated only)
+    let analysisId: string | null = null
+    if (!isGuest && supabase && user) {
+      const { data: analysis, error: insertError } = await supabase
+        .from('competitor_analyses')
+        .insert({
+          user_id: user.id,
+          url,
+          domain: new URL(url).hostname.replace(/^www\./, ''),
+          status: 'scraping',
+        })
+        .select('id')
+        .single()
 
-    if (insertError || !analysis) {
-      return NextResponse.json(
-        { error: 'Something went wrong. Please try again.' },
-        { status: 500 }
-      )
+      if (insertError || !analysis) {
+        return NextResponse.json(
+          { error: 'Something went wrong. Please try again.' },
+          { status: 500 }
+        )
+      }
+      analysisId = analysis.id
     }
 
     let scrapedContent
     if (cached?.cleaned_text) {
-      // Use cached content
       scrapedContent = {
         url: cached.url,
         domain: cached.domain,
@@ -97,10 +96,8 @@ export async function POST(request: NextRequest) {
         renderMethod: cached.render_method as 'js_rendered' | 'static_only',
       }
     } else {
-      // Scrape fresh
       scrapedContent = await scrapeUrl(url)
 
-      // Cache the result
       await serviceClient
         .from('url_cache')
         .upsert({
@@ -118,18 +115,20 @@ export async function POST(request: NextRequest) {
         }, { onConflict: 'url' })
     }
 
-    // Update status to analysing
-    await supabase
-      .from('competitor_analyses')
-      .update({
-        status: 'analysing',
-        favicon_url: scrapedContent.faviconUrl,
-        og_title: scrapedContent.ogTitle,
-        extraction_quality: scrapedContent.extractionQuality,
-        render_method: scrapedContent.renderMethod,
-        word_count: scrapedContent.wordCount,
-      })
-      .eq('id', analysis.id)
+    // Update status (authenticated only)
+    if (analysisId && supabase) {
+      await supabase
+        .from('competitor_analyses')
+        .update({
+          status: 'analysing',
+          favicon_url: scrapedContent.faviconUrl,
+          og_title: scrapedContent.ogTitle,
+          extraction_quality: scrapedContent.extractionQuality,
+          render_method: scrapedContent.renderMethod,
+          word_count: scrapedContent.wordCount,
+        })
+        .eq('id', analysisId)
+    }
 
     // Gemini analysis
     const start = Date.now()
@@ -137,10 +136,12 @@ export async function POST(request: NextRequest) {
     try {
       geminiResult = await analyzeCompetitor(scrapedContent)
     } catch (err) {
-      await supabase
-        .from('competitor_analyses')
-        .update({ status: 'failed', error_message: 'Analysis timed out. Please try again.' })
-        .eq('id', analysis.id)
+      if (analysisId && supabase) {
+        await supabase
+          .from('competitor_analyses')
+          .update({ status: 'failed', error_message: 'Analysis timed out. Please try again.' })
+          .eq('id', analysisId)
+      }
       return NextResponse.json(
         { error: 'Analysis timed out. Please try again.' },
         { status: 504 }
@@ -148,39 +149,70 @@ export async function POST(request: NextRequest) {
     }
     const generationMs = Date.now() - start
 
-    // Update with results
-    const { data: finalAnalysis, error: updateError } = await supabase
-      .from('competitor_analyses')
-      .update({
-        status: 'complete',
-        value_proposition: geminiResult.valueProp.statement,
-        vp_confidence: geminiResult.valueProp.confidence,
-        vp_evidence: geminiResult.valueProp.evidence,
-        target_icp: geminiResult.targetICP.description,
-        icp_confidence: geminiResult.targetICP.confidence,
-        icp_signals: geminiResult.targetICP.signals,
-        pricing_model: geminiResult.pricingModel.description,
-        pricing_confidence: geminiResult.pricingModel.confidence,
-        pricing_signals: geminiResult.pricingModel.signals,
-        gtm_motion: geminiResult.gtmMotion.description,
-        gtm_confidence: geminiResult.gtmMotion.confidence,
-        gtm_signals: geminiResult.gtmMotion.signals,
-        weaknesses: geminiResult.weaknesses,
-        analysis_notes: geminiResult.analysisNotes,
-        generation_ms: generationMs,
-      })
-      .eq('id', analysis.id)
-      .select()
-      .single()
+    // Save results (authenticated only)
+    if (analysisId && supabase) {
+      const { data: finalAnalysis, error: updateError } = await supabase
+        .from('competitor_analyses')
+        .update({
+          status: 'complete',
+          value_proposition: geminiResult.valueProp.statement,
+          vp_confidence: geminiResult.valueProp.confidence,
+          vp_evidence: geminiResult.valueProp.evidence,
+          target_icp: geminiResult.targetICP.description,
+          icp_confidence: geminiResult.targetICP.confidence,
+          icp_signals: geminiResult.targetICP.signals,
+          pricing_model: geminiResult.pricingModel.description,
+          pricing_confidence: geminiResult.pricingModel.confidence,
+          pricing_signals: geminiResult.pricingModel.signals,
+          gtm_motion: geminiResult.gtmMotion.description,
+          gtm_confidence: geminiResult.gtmMotion.confidence,
+          gtm_signals: geminiResult.gtmMotion.signals,
+          weaknesses: geminiResult.weaknesses,
+          analysis_notes: geminiResult.analysisNotes,
+          generation_ms: generationMs,
+        })
+        .eq('id', analysisId)
+        .select()
+        .single()
 
-    if (updateError) {
-      return NextResponse.json(
-        { error: 'Something went wrong. Please try again.' },
-        { status: 500 }
-      )
+      if (updateError) {
+        return NextResponse.json(
+          { error: 'Something went wrong. Please try again.' },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json(finalAnalysis)
     }
 
-    return NextResponse.json(finalAnalysis)
+    // Guest: return analysis without saving
+    return NextResponse.json({
+      id: null,
+      url,
+      domain: new URL(url).hostname.replace(/^www\./, ''),
+      status: 'complete',
+      favicon_url: scrapedContent.faviconUrl,
+      og_title: scrapedContent.ogTitle,
+      extraction_quality: scrapedContent.extractionQuality,
+      render_method: scrapedContent.renderMethod,
+      word_count: scrapedContent.wordCount,
+      value_proposition: geminiResult.valueProp.statement,
+      vp_confidence: geminiResult.valueProp.confidence,
+      vp_evidence: geminiResult.valueProp.evidence,
+      target_icp: geminiResult.targetICP.description,
+      icp_confidence: geminiResult.targetICP.confidence,
+      icp_signals: geminiResult.targetICP.signals,
+      pricing_model: geminiResult.pricingModel.description,
+      pricing_confidence: geminiResult.pricingModel.confidence,
+      pricing_signals: geminiResult.pricingModel.signals,
+      gtm_motion: geminiResult.gtmMotion.description,
+      gtm_confidence: geminiResult.gtmMotion.confidence,
+      gtm_signals: geminiResult.gtmMotion.signals,
+      weaknesses: geminiResult.weaknesses,
+      analysis_notes: geminiResult.analysisNotes,
+      generation_ms: generationMs,
+      saved: false,
+    })
   } catch (err) {
     console.error('[analyze] Unexpected error:', err instanceof Error ? err.message : 'Unknown')
     return NextResponse.json(
