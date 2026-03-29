@@ -215,6 +215,16 @@
   --spam-highlight:       rgb(239 68 68 / 0.19);
 }
 
+/* ─── Day 12 ThumbnailForge Driver & Winner Colours ──────── */
+[data-day="12"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --driver-curiosity:   #8B5CF6;
+  --driver-interrupt:   #06B6D4;
+  --driver-emotion:     #F97316;
+  --winner-bg:          rgb(232 160 32 / 0.04);
+  --winner-border:      #E8A020;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
