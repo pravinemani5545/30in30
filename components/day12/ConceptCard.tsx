@@ -8,7 +8,7 @@ import { ColourPalette } from "./ColourPalette";
 import { CompositionSteps } from "./CompositionSteps";
 import { ABHypothesis } from "./ABHypothesis";
 import { useCopyToClipboard } from "@/hooks/day12/useCopyToClipboard";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ImageIcon, Loader2, Download } from "lucide-react";
 
 function buildFullBrief(concept: ThumbConcept): string {
   const lines = [
@@ -29,9 +29,31 @@ function buildFullBrief(concept: ThumbConcept): string {
   return lines.join("\n");
 }
 
-export function ConceptCard({ concept }: { concept: ThumbConcept }) {
+interface ConceptCardProps {
+  concept: ThumbConcept;
+  imageUrl: string | null;
+  imageLoading: boolean;
+  imageError: string | null;
+  onGenerateImage: () => void;
+}
+
+export function ConceptCard({
+  concept,
+  imageUrl,
+  imageLoading,
+  imageError,
+  onGenerateImage,
+}: ConceptCardProps) {
   const { copy, copied } = useCopyToClipboard();
   const isWinner = concept.isPredictedWinner;
+
+  function handleDownload() {
+    if (!imageUrl) return;
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = `thumbnail-${concept.driver}.png`;
+    link.click();
+  }
 
   return (
     <div
@@ -66,26 +88,91 @@ export function ConceptCard({ concept }: { concept: ThumbConcept }) {
 
         <ABHypothesis text={concept.abNote} />
 
-        <button
-          onClick={() => copy(buildFullBrief(concept))}
-          className="flex items-center justify-center gap-2 w-full py-2 rounded border text-[13px] font-medium transition-colors hover:bg-white/5"
-          style={{
-            borderColor: "var(--border)",
-            color: "var(--text-secondary)",
-          }}
-        >
-          {copied ? (
-            <>
-              <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy className="h-3.5 w-3.5" />
-              Copy full brief
-            </>
-          )}
-        </button>
+        {/* Generated Image */}
+        {imageUrl && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span
+                className="text-[10px] font-bold tracking-[0.1em]"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                GENERATED THUMBNAIL
+              </span>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-1 p-1 rounded text-[11px] transition-colors hover:bg-white/5"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                <Download className="h-3 w-3" />
+                Save
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt={`Thumbnail mockup: ${concept.conceptName}`}
+              className="w-full rounded-md border"
+              style={{ borderColor: "var(--border)", aspectRatio: "16/9", objectFit: "cover" }}
+            />
+          </div>
+        )}
+
+        {imageError && (
+          <p className="text-[12px]" style={{ color: "var(--error)" }}>
+            {imageError}
+          </p>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => copy(buildFullBrief(concept))}
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded border text-[13px] font-medium transition-colors hover:bg-white/5"
+            style={{
+              borderColor: "var(--border)",
+              color: "var(--text-secondary)",
+            }}
+          >
+            {copied ? (
+              <>
+                <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                Copy brief
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={onGenerateImage}
+            disabled={imageLoading}
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded border text-[13px] font-medium transition-colors hover:bg-white/5 disabled:opacity-50"
+            style={{
+              borderColor: imageUrl ? "var(--border)" : "var(--accent)",
+              color: imageUrl ? "var(--text-secondary)" : "var(--accent)",
+            }}
+          >
+            {imageLoading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Generating...
+              </>
+            ) : imageUrl ? (
+              <>
+                <ImageIcon className="h-3.5 w-3.5" />
+                Regenerate
+              </>
+            ) : (
+              <>
+                <ImageIcon className="h-3.5 w-3.5" />
+                Generate image
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { HistorySidebar } from "./HistorySidebar";
 import { GmailDraftButton } from "./GmailDraftButton";
 import { useGenerateConcepts } from "@/hooks/day12/useGenerateConcepts";
 import { useConcepts, useConceptDetail } from "@/hooks/day12/useConcepts";
+import { useGenerateImage } from "@/hooks/day12/useGenerateImage";
 import type { ThumbnailConceptSet } from "@/types/day12";
 
 export function ThumbnailDashboard() {
@@ -24,8 +25,12 @@ export function ThumbnailDashboard() {
   const { data: historyDetail, loading: detailLoading } =
     useConceptDetail(selectedHistoryId);
 
-  // Display either fresh generation or history detail
   const displaySet = selectedHistoryId ? historyDetail : activeConceptSet;
+
+  const { images, generate: generateImage, reset: resetImages } =
+    useGenerateImage(displaySet?.id ?? null);
+
+  const anyImageLoading = Object.values(images).some((s) => s.loading);
 
   async function handleGenerate(input: {
     videoTitle: string;
@@ -34,6 +39,7 @@ export function ThumbnailDashboard() {
   }) {
     clearError();
     setSelectedHistoryId(null);
+    resetImages();
     const result = await generate(input);
     if (result) {
       setActiveConceptSet(result);
@@ -44,12 +50,22 @@ export function ThumbnailDashboard() {
   function handleHistorySelect(id: string) {
     setSelectedHistoryId(id);
     setActiveConceptSet(null);
+    resetImages();
   }
 
   function handleHistoryDeleted(id: string) {
     removeFromHistory(id);
     if (selectedHistoryId === id) {
       setSelectedHistoryId(null);
+    }
+  }
+
+  function handleGenerateAllImages() {
+    if (!displaySet) return;
+    for (let i = 0; i < displaySet.concepts.length; i++) {
+      if (!images[i]?.url && !images[i]?.loading) {
+        generateImage(i);
+      }
     }
   }
 
@@ -95,7 +111,13 @@ export function ThumbnailDashboard() {
                 <GmailDraftButton conceptSet={displaySet} />
               </div>
 
-              <ConceptGrid concepts={displaySet.concepts} />
+              <ConceptGrid
+                concepts={displaySet.concepts}
+                images={images}
+                onGenerateImage={generateImage}
+                onGenerateAllImages={handleGenerateAllImages}
+                anyImageLoading={anyImageLoading}
+              />
 
               <div
                 className="rounded-md border p-4"
