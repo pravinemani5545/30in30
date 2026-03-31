@@ -225,6 +225,19 @@
   --winner-border:      #E8A020;
 }
 
+/* ─── Day 13 ICPBuilder Section & Progress Colours ─────── */
+[data-day="13"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --q-completed:            #22C55E;
+  --q-active:               #E8A020;
+  --q-pending:              #262626;
+  --section-firmographic:   #8B5CF6;
+  --section-painpoints:     #EF4444;
+  --section-objections:     #F97316;
+  --section-channels:       #22C55E;
+  --section-realitycheck:   #E8A020;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

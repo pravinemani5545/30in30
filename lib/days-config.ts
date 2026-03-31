@@ -22,7 +22,7 @@ export const DAYS: DayConfig[] = [
   { day: 10, slug: "day10", name: "AICodeReviewer", tagline: "Adversarial code review powered by Gemini", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
   { day: 11, slug: "day11", name: "OutreachGrader", tagline: "Score and improve outreach messages", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
   { day: 12, slug: "day12", name: "ThumbnailForge", tagline: "YouTube thumbnail concepts via Galloway's framework", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
-  { day: 13, slug: "day13", name: "ICPBuilder", tagline: "Build ideal customer profiles with AI", status: "coming-soon", tags: [] },
+  { day: 13, slug: "day13", name: "ICPBuilder", tagline: "Build ideal customer profiles with AI", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
   { day: 14, slug: "day14", name: "ScriptEngine", tagline: "Video script writing assistant", status: "coming-soon", tags: [] },
   { day: 15, slug: "day15", name: "EmailSequenceWriter", tagline: "AI email sequence generator", status: "coming-soon", tags: [] },
   { day: 16, slug: "day16", name: "DeliverabilityTester", tagline: "Email deliverability checker", status: "coming-soon", tags: [] },
