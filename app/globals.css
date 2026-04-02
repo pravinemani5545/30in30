@@ -225,6 +225,21 @@
   --winner-border:      #E8A020;
 }
 
+/* ─── Day 15 EmailSequenceWriter Arc & Slot Colours ──── */
+[data-day="15"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --email-interrupt:    #8B5CF6;
+  --email-proof:        #06B6D4;
+  --email-pivot:        #E8A020;
+  --email-breakup:      #F97316;
+  --email-reengagement: #22C55E;
+  --slot-bg:            rgb(232 160 32 / 0.09);
+  --slot-border:        #E8A020;
+  --slot-text:          #E8A020;
+  --variant-a:          #8B5CF6;
+  --variant-b:          #06B6D4;
+}
+
 /* ─── Day 13 ICPBuilder Section & Progress Colours ─────── */
 [data-day="13"] {
   --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
