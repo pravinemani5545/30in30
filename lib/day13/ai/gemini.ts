@@ -3,13 +3,20 @@ import { getServerEnv } from "@/lib/env";
 
 let genAI: GoogleGenerativeAI | null = null;
 
+function getGeminiApiKey() {
+  const env = getServerEnv();
+  return env.GEMINI_API_KEY ?? env.GOOGLE_GENERATIVE_AI_API_KEY ?? null;
+}
+
 function getGenAI() {
   if (genAI) return genAI;
-  const env = getServerEnv();
-  if (!env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is required for Day 13");
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error(
+      "A Gemini API key is required for Day 13 (set GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY)",
+    );
   }
-  genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+  genAI = new GoogleGenerativeAI(apiKey);
   return genAI;
 }
 

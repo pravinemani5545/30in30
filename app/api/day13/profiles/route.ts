@@ -6,6 +6,7 @@ import { getActiveModelId } from "@/lib/day13/ai/gemini";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 const DAILY_LIMIT = 5;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {

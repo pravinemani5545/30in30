@@ -10,6 +10,7 @@ const serverSchema = z.object({
   // AI keys — optional (validated per-day at call site)
   ANTHROPIC_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
 
