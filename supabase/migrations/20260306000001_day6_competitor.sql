@@ -1,6 +1,6 @@
 CREATE TYPE extraction_quality AS ENUM ('rich', 'partial', 'minimal');
 CREATE TYPE render_method AS ENUM ('js_rendered', 'static_only');
-CREATE TYPE confidence_level AS ENUM ('high', 'mid', 'low');
+DO $$ BEGIN CREATE TYPE confidence_level AS ENUM ('high', 'mid', 'low'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE TYPE weakness_severity AS ENUM ('high', 'medium', 'low');
 CREATE TYPE analysis_status AS ENUM ('pending','scraping','analysing','complete','failed');
 

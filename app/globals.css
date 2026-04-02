@@ -238,6 +238,22 @@
   --section-realitycheck:   #E8A020;
 }
 
+/* ─── Day 14 ScriptEngine Section & Hook Colours ────────── */
+[data-day="14"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --section-hook:       #E8A020;
+  --section-proof:      #8B5CF6;
+  --section-body:       #06B6D4;
+  --section-retention:  #F97316;
+  --section-cta:        #22C55E;
+  --hook-strong:        #22C55E;
+  --hook-weak:          #EF4444;
+  --hook-pending:       #737373;
+  --wc-under:           #737373;
+  --wc-near:            #E8A020;
+  --wc-at:              #22C55E;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
