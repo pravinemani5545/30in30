@@ -96,7 +96,7 @@ export function ConceptForm({ onSubmit, loading, error }: ConceptFormProps) {
         className="text-center text-[12px]"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Takes 5-8 seconds · Powered by Paddy Galloway&apos;s framework
+        Takes 20-30 seconds · Powered by Paddy Galloway&apos;s framework
       </p>
 
       {error && (

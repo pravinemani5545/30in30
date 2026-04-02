@@ -15,7 +15,7 @@ export function GeneratingState() {
           Generating your 5-email sequence...
         </p>
         <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-          All 5 emails in one call for arc coherence. Takes 8-12 seconds.
+          All 5 emails in one call for arc coherence. Takes 20-30 seconds.
         </p>
       </div>
     </div>

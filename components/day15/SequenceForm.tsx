@@ -177,7 +177,7 @@ export function SequenceForm({ onSubmit, loading, error }: SequenceFormProps) {
       </button>
 
       <p className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-        Generates all 5 emails in one call. Takes 8-12 seconds.
+        Generates all 5 emails in one call. Takes 20-30 seconds.
       </p>
     </form>
   );

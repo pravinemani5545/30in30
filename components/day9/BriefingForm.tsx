@@ -108,7 +108,7 @@ export function BriefingForm({ onSubmit, isGenerating }: BriefingFormProps) {
       </Button>
 
       <p className="text-[11px] text-[var(--text-tertiary)] pt-1 clear-both">
-        Takes 8-15 seconds on first run. Cached for 24h.
+        Takes 20-30 seconds on first run. Cached for 24h.
       </p>
     </form>
   );

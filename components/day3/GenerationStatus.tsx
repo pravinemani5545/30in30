@@ -36,7 +36,7 @@ export function GenerationStatus({ step, articleTitle }: { step: GenerationStep;
             : STEPS.find((s) => s.key === step)?.label ?? "Working..."}
         </p>
         <p className="text-sm" style={{ color: "var(--text-tertiary)" }}>
-          This may take 1–2 minutes
+          This may take ~1 minute
         </p>
       </div>
 
