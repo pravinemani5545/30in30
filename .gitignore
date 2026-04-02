@@ -8,3 +8,12 @@ next-env.d.ts
 Architecture.md
 Log.md
 .env*.local
+
+# Claude Code local config
+.claude/
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# Misc
+Claude.pdf
