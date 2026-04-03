@@ -1,6 +1,7 @@
 "use client";
 
-import { Copy, Check, RotateCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Copy, Check, RotateCcw, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/day14/useCopyToClipboard";
 import { assembleFullText } from "@/lib/day14/script/parser";
@@ -10,14 +11,17 @@ import type { ScriptSection } from "@/types/day14";
 interface ScriptActionsProps {
   sections: ScriptSection[];
   topic: string;
+  scriptId?: string;
   onRegenerate?: () => void;
 }
 
 export function ScriptActions({
   sections,
   topic,
+  scriptId,
   onRegenerate,
 }: ScriptActionsProps) {
+  const router = useRouter();
   const { copied, copy } = useCopyToClipboard();
   const fullText = assembleFullText(sections);
 
@@ -37,6 +41,17 @@ export function ScriptActions({
         {copied ? "Copied" : "Copy script"}
       </Button>
       <GmailDraftButton topic={topic} fullText={fullText} />
+      {scriptId && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push(`/day16?scriptId=${scriptId}`)}
+          className="border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-subtle)]"
+        >
+          <Mic className="mr-1.5 h-3.5 w-3.5" />
+          Generate Voiceover
+        </Button>
+      )}
       {onRegenerate && (
         <Button
           variant="outline"

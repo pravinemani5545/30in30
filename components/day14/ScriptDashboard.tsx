@@ -226,6 +226,7 @@ export function ScriptDashboard() {
                   <ScriptActions
                     sections={displaySections}
                     topic={displayTopic}
+                    scriptId={activeScriptId ?? savedScriptId ?? undefined}
                     onRegenerate={handleRegenerate}
                   />
                 </div>

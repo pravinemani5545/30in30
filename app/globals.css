@@ -225,6 +225,22 @@
   --winner-border:      #E8A020;
 }
 
+/* ─── Day 16 VoiceoverStudio Audio & Voice Colours ──── */
+[data-day="16"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --audio-idle:       #262626;
+  --audio-loading:    #E8A020;
+  --audio-ready:      #22C55E;
+  --audio-playing:    #E8A020;
+  --audio-error:      #EF4444;
+  --cost-low:         #22C55E;
+  --cost-mid:         #E8A020;
+  --cost-high:        #EF4444;
+  --voice-premade:    #8B5CF6;
+  --voice-cloned:     #06B6D4;
+  --voice-generated:  #E8A020;
+}
+
 /* ─── Day 15 EmailSequenceWriter Arc & Slot Colours ──── */
 [data-day="15"] {
   --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);

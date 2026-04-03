@@ -25,6 +25,9 @@ const serverSchema = z.object({
 
   // Day 6 — CompetitorRadar (local dev only)
   PUPPETEER_EXECUTABLE_PATH: z.string().optional(),
+
+  // Day 16 — VoiceoverStudio
+  ELEVENLABS_API_KEY: z.string().optional(),
 });
 
 let cached: z.infer<typeof serverSchema> | null = null;
