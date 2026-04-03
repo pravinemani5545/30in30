@@ -36,7 +36,7 @@ export async function streamVoiceover(
 ): Promise<Response> {
   const body: ElevenLabsGenerateRequest = {
     text,
-    model_id: "eleven_monolingual_v1",
+    model_id: "eleven_flash_v2_5",
     voice_settings: {
       stability,
       similarity_boost: 0.75,
