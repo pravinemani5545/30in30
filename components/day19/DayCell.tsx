@@ -19,7 +19,7 @@ export const DayCell = memo(function DayCell({ dayNumber, posts, index }: Props)
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03, duration: 0.25 }}
-      className="min-h-[100px] rounded-lg border p-2"
+      className="min-h-[80px] rounded-lg border p-1.5"
       style={{
         backgroundColor: hasViolation
           ? "color-mix(in srgb, var(--error) 5%, var(--background))"
@@ -28,12 +28,12 @@ export const DayCell = memo(function DayCell({ dayNumber, posts, index }: Props)
       }}
     >
       <p
-        className="text-[11px] font-bold mb-1.5"
-        style={{ color: "var(--text-tertiary)" }}
+        className="font-bold mb-1"
+        style={{ fontSize: 9, color: "var(--text-tertiary)" }}
       >
         DAY {dayNumber}
       </p>
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {posts.map((post, i) => (
           <PostCard key={`${post.dayNumber}-${post.platform}-${i}`} post={post} />
         ))}

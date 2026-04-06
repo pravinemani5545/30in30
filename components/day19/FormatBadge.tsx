@@ -15,9 +15,9 @@ export function FormatBadge({ format }: { format: ContentFormat }) {
   const color = FORMAT_COLORS[format];
   return (
     <span
-      className="inline-flex items-center rounded px-1.5 py-0.5 font-semibold uppercase tracking-wider"
+      className="inline-flex items-center rounded px-1.5 py-px font-semibold uppercase tracking-wide leading-none"
       style={{
-        fontSize: 10,
+        fontSize: 9,
         fontFamily: "var(--font-sans)",
         color,
         backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,

@@ -18,9 +18,9 @@ export function EffortBadge({ level }: { level: EffortLevel }) {
   const color = EFFORT_COLORS[level];
   return (
     <span
-      className="inline-flex items-center rounded px-1.5 py-0.5 font-bold uppercase tracking-wider"
+      className="inline-flex items-center rounded px-1 py-px font-bold uppercase tracking-wide leading-none"
       style={{
-        fontSize: 10,
+        fontSize: 8,
         fontFamily: "var(--font-sans)",
         color,
         backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,

@@ -12,7 +12,7 @@ interface Props {
 export const PostCard = memo(function PostCard({ post }: Props) {
   return (
     <div
-      className="rounded-md border p-2 transition-colors group relative"
+      className="rounded border p-1.5 transition-colors group relative"
       style={{
         backgroundColor: "var(--surface)",
         borderColor: post.windowViolation
@@ -25,13 +25,13 @@ export const PostCard = memo(function PostCard({ post }: Props) {
             : undefined,
       }}
     >
-      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+      <div className="flex items-center gap-1 mb-0.5 flex-wrap">
         <PlatformBadge platform={post.platform} />
         <EffortBadge level={post.effortLevel} />
       </div>
       <p
-        className="text-xs leading-snug line-clamp-2"
-        style={{ color: "var(--foreground)", fontFamily: "var(--font-sans)" }}
+        className="leading-tight line-clamp-2"
+        style={{ fontSize: 10, color: "var(--foreground)", fontFamily: "var(--font-sans)" }}
       >
         {post.topic}
       </p>

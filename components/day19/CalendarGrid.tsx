@@ -41,7 +41,7 @@ export function CalendarGrid({ posts }: Props) {
             return (
               <div
                 key={`empty-${i}`}
-                className="min-h-[100px] rounded-lg"
+                className="min-h-[80px] rounded-lg"
                 style={{ backgroundColor: "color-mix(in srgb, var(--surface) 30%, transparent)" }}
               />
             );
