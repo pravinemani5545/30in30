@@ -40,7 +40,7 @@ YouTube: Wednesday 2 PM ET (highest algorithmic lift for new channels)
 X (Twitter): 11 AM ET Tuesday-Thursday (peak tech audience engagement)
 Newsletter: Wednesday 8 AM ET (highest open rates for technical content)
 LinkedIn: 8 AM ET Tuesday-Thursday
-Short posts: 11 AM–1 PM ET any weekday. No weekend posts unless explicitly requested.
+Short posts: 11 AM–1 PM ET any day. Weekend posts are allowed if the creator's schedule supports it.
 
 ── OUTPUT FORMAT ────────────────────────────────────────────────
 

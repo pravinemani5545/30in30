@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import type { PostItem } from "@/types/day19";
 import { DayCell } from "./DayCell";
+import { DayDetail } from "./DayDetail";
 
 const DAYS_OF_WEEK = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export function CalendarGrid({ posts }: Props) {
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
   // Group posts by day number
   const byDay = new Map<number, PostItem[]>();
   for (const post of posts) {
@@ -17,6 +21,12 @@ export function CalendarGrid({ posts }: Props) {
     existing.push(post);
     byDay.set(post.dayNumber, existing);
   }
+
+  function handleSelect(dayNumber: number) {
+    setSelectedDay((prev) => (prev === dayNumber ? null : dayNumber));
+  }
+
+  const selectedPosts = selectedDay ? byDay.get(selectedDay) ?? [] : [];
 
   return (
     <div>
@@ -42,7 +52,10 @@ export function CalendarGrid({ posts }: Props) {
               <div
                 key={`empty-${i}`}
                 className="min-h-[80px] rounded-lg"
-                style={{ backgroundColor: "color-mix(in srgb, var(--surface) 30%, transparent)" }}
+                style={{
+                  backgroundColor:
+                    "color-mix(in srgb, var(--surface) 30%, transparent)",
+                }}
               />
             );
           }
@@ -53,10 +66,22 @@ export function CalendarGrid({ posts }: Props) {
               dayNumber={dayNumber}
               posts={dayPosts}
               index={i}
+              selected={selectedDay === dayNumber}
+              onSelect={handleSelect}
             />
           );
         })}
       </div>
+
+      {/* Selected day detail */}
+      {selectedDay && selectedPosts.length > 0 && (
+        <DayDetail
+          dayNumber={selectedDay}
+          posts={selectedPosts}
+          allPosts={posts}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
 
       {/* Week labels */}
       <div className="grid grid-cols-5 gap-1 mt-2">
