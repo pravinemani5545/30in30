@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Paths that are always public (no auth needed)
 const publicPaths = ["/login", "/auth/callback"];
-const publicApiPaths = ["/api/day4/unsubscribe", "/api/day4/cron", "/api/day9/briefings/auto"];
+const publicApiPaths = ["/api/day4/unsubscribe", "/api/day4/cron", "/api/day9/briefings/auto", "/api/day18/cron"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({

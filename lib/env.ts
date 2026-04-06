@@ -28,6 +28,9 @@ const serverSchema = z.object({
 
   // Day 16 — VoiceoverStudio
   ELEVENLABS_API_KEY: z.string().optional(),
+
+  // Day 18 — CompanyTracker
+  RESEND_FROM_EMAIL: z.string().optional(),
 });
 
 let cached: z.infer<typeof serverSchema> | null = null;

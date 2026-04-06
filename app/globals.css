@@ -241,6 +241,33 @@
   --voice-generated:  #E8A020;
 }
 
+/* ─── Day 18 CompanyTracker Change Type & Status Colours ──── */
+[data-day="18"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --change-pricing:   #EF4444;
+  --change-feature:   #8B5CF6;
+  --change-hiring:    #22C55E;
+  --change-messaging: #06B6D4;
+  --change-other:     #8A8580;
+  --status-active:    #22C55E;
+  --status-error:     #EF4444;
+  --status-pending:   #E8A020;
+}
+
+/* ─── Day 17 DeliverabilityTester Grade & Check Colours ──── */
+[data-day="17"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --grade-a:       #22C55E;
+  --grade-b:       #84CC16;
+  --grade-c:       #E8A020;
+  --grade-d:       #F97316;
+  --grade-f:       #EF4444;
+  --check-pass:    #22C55E;
+  --check-warn:    #E8A020;
+  --check-fail:    #EF4444;
+  --check-unknown: #8A8580;
+}
+
 /* ─── Day 15 EmailSequenceWriter Arc & Slot Colours ──── */
 [data-day="15"] {
   --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
@@ -283,6 +310,23 @@
   --wc-under:           #737373;
   --wc-near:            #E8A020;
   --wc-at:              #22C55E;
+}
+
+/* ─── Day 19 ContentCalendar Platform, Effort & Format Colours ──── */
+[data-day="19"] {
+  --accent: #E8A020; --accent-hover: #D4911A; --accent-subtle: rgb(232 160 32 / 0.08);
+  --platform-youtube:     #EF4444;
+  --platform-x:           #F5F0E8;
+  --platform-newsletter:  #8B5CF6;
+  --platform-linkedin:    #0A66C2;
+  --effort-high:          #EF4444;
+  --effort-medium:        #E8A020;
+  --effort-low:           #22C55E;
+  --format-video:         #EF4444;
+  --format-thread:        #F5F0E8;
+  --format-essay:         #8B5CF6;
+  --format-short:         #22C55E;
+  --format-newsletter:    #8B5CF6;
 }
 
 @media (prefers-reduced-motion: reduce) {
