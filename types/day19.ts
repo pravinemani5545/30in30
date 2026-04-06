@@ -76,6 +76,7 @@ export interface CalendarInput {
   uniquePerspective: string;
   styleExample?: string;
   monthLabel: string;
+  includeWeekends?: boolean;
 }
 
 export const PLATFORM_LABELS: Record<Platform, string> = {

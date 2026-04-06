@@ -32,6 +32,7 @@ export function CalendarForm({
   const [uniquePerspective, setUniquePerspective] = useState("");
   const [styleExample, setStyleExample] = useState("");
   const [monthLabel, setMonthLabel] = useState(getMonthLabel());
+  const [includeWeekends, setIncludeWeekends] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function validate(): boolean {
@@ -61,6 +62,7 @@ export function CalendarForm({
       uniquePerspective: uniquePerspective.trim(),
       styleExample: styleExample.trim() || undefined,
       monthLabel: monthLabel.trim(),
+      includeWeekends,
     });
   }
 
@@ -193,6 +195,34 @@ export function CalendarForm({
           </p>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setIncludeWeekends(!includeWeekends)}
+        className="w-full flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors"
+        style={{
+          backgroundColor: includeWeekends ? "var(--accent-subtle)" : "var(--surface)",
+          borderColor: includeWeekends ? "var(--accent)" : "var(--border)",
+        }}
+      >
+        <span className="text-sm" style={{ color: "var(--foreground)" }}>
+          Include weekends
+        </span>
+        <div
+          className="w-8 h-4.5 rounded-full relative transition-colors"
+          style={{
+            backgroundColor: includeWeekends ? "var(--accent)" : "var(--border)",
+          }}
+        >
+          <div
+            className="w-3.5 h-3.5 rounded-full absolute top-0.5 transition-all"
+            style={{
+              backgroundColor: "var(--background)",
+              left: includeWeekends ? 16 : 2,
+            }}
+          />
+        </div>
+      </button>
 
       <button
         type="submit"

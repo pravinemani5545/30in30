@@ -40,7 +40,7 @@ YouTube: Wednesday 2 PM ET (highest algorithmic lift for new channels)
 X (Twitter): 11 AM ET Tuesday-Thursday (peak tech audience engagement)
 Newsletter: Wednesday 8 AM ET (highest open rates for technical content)
 LinkedIn: 8 AM ET Tuesday-Thursday
-Short posts: 11 AM–1 PM ET any day. Weekend posts are allowed if the creator's schedule supports it.
+Short posts: 11 AM–1 PM ET any day.
 
 ── OUTPUT FORMAT ────────────────────────────────────────────────
 
@@ -98,6 +98,8 @@ Month: ${input.monthLabel}
 
 Style calibration — this is my highest-performing recent post (match this voice):
 ${styleSection}
+
+Weekend posting: ${input.includeWeekends ? "YES — schedule posts on weekends too." : "NO — only schedule posts Monday through Friday."}
 
 Apply the unique perspective lens to every single topic. Generic topics are not acceptable.`;
 }

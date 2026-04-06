@@ -19,6 +19,7 @@ export const CalendarInputSchema = z.object({
     .trim(),
   styleExample: z.string().max(1000).trim().optional(),
   monthLabel: z.string().min(3).max(20),
+  includeWeekends: z.boolean().optional(),
 });
 
 export type CalendarInputType = z.infer<typeof CalendarInputSchema>;

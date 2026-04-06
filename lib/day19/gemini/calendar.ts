@@ -1,5 +1,5 @@
 import type { CalendarInput, CalendarOutput, PostItem } from "@/types/day19";
-import { getModelJson, getActiveModelId } from "@/lib/day19/ai/gemini";
+import { generateJson, getActiveModelId } from "@/lib/day19/ai/gemini";
 import { CALENDAR_SYSTEM_PROMPT, buildCalendarPrompt } from "./prompts";
 import { CalendarOutputSchema } from "@/lib/day19/validations/calendars";
 import {
@@ -21,14 +21,11 @@ export interface CalendarReport {
 export async function generateCalendar(
   input: CalendarInput,
 ): Promise<CalendarReport> {
-  const model = getModelJson(CALENDAR_SYSTEM_PROMPT, 65536);
   const userPrompt = buildCalendarPrompt(input);
 
   const start = Date.now();
-  const result = await model.generateContent(userPrompt);
+  const rawText = await generateJson(CALENDAR_SYSTEM_PROMPT, userPrompt);
   const generationMs = Date.now() - start;
-
-  const rawText = result.response.text();
 
   // Strip potential markdown fences
   const cleaned = rawText

@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { getServerEnv } from "@/lib/env";
 
-let genAI: GoogleGenerativeAI | null = null;
+let genAI: GoogleGenAI | null = null;
 
 function getGenAI() {
   if (genAI) return genAI;
@@ -9,7 +9,7 @@ function getGenAI() {
   if (!env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is required for Day 19");
   }
-  genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+  genAI = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
   return genAI;
 }
 
@@ -20,18 +20,24 @@ function getModelId(): string {
   return env.GEMINI_MODEL ?? DEFAULT_MODEL;
 }
 
-export function getModelJson(
+export async function generateJson(
   systemInstruction: string,
-  maxOutputTokens: number = 65536,
-) {
-  return getGenAI().getGenerativeModel({
+  userPrompt: string,
+): Promise<string> {
+  const ai = getGenAI();
+  const response = await ai.models.generateContent({
     model: getModelId(),
-    generationConfig: {
+    contents: userPrompt,
+    config: {
+      systemInstruction,
       responseMimeType: "application/json",
-      maxOutputTokens,
+      maxOutputTokens: 65536,
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
     },
-    systemInstruction,
   });
+  return response.text ?? "";
 }
 
 export function getActiveModelId(): string {
