@@ -3,7 +3,7 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { CalendarInputSchema } from "@/lib/day19/validations/calendars";
 import { generateCalendar } from "@/lib/day19/gemini/calendar";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const MAX_CALENDARS_PER_DAY = 5;
 

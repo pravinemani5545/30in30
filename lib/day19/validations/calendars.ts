@@ -50,5 +50,5 @@ export const PostItemSchema = z.object({
 export const CalendarOutputSchema = z.object({
   calendarSummary: z.string(),
   highEffortDays: z.array(z.number().int()),
-  posts: z.array(PostItemSchema).min(20).max(60),
+  posts: z.array(PostItemSchema).min(10).max(80),
 });

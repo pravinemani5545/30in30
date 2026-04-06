@@ -22,7 +22,7 @@ function getModelId(): string {
 
 export function getModelJson(
   systemInstruction: string,
-  maxOutputTokens: number = 8192,
+  maxOutputTokens: number = 65536,
 ) {
   return getGenAI().getGenerativeModel({
     model: getModelId(),

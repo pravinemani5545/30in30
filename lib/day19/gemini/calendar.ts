@@ -21,7 +21,7 @@ export interface CalendarReport {
 export async function generateCalendar(
   input: CalendarInput,
 ): Promise<CalendarReport> {
-  const model = getModelJson(CALENDAR_SYSTEM_PROMPT, 8192);
+  const model = getModelJson(CALENDAR_SYSTEM_PROMPT, 65536);
   const userPrompt = buildCalendarPrompt(input);
 
   const start = Date.now();
@@ -45,7 +45,14 @@ export async function generateCalendar(
   }
 
   // Zod validate
-  const validated: CalendarOutput = CalendarOutputSchema.parse(parsed);
+  const zodResult = CalendarOutputSchema.safeParse(parsed);
+  if (!zodResult.success) {
+    const firstIssue = zodResult.error.issues[0];
+    throw new Error(
+      `Calendar validation failed: ${firstIssue?.message ?? "unknown"} at ${firstIssue?.path?.join(".")}`,
+    );
+  }
+  const validated: CalendarOutput = zodResult.data;
 
   // Server-side rolling window validation
   const postsWithViolations = validateRollingWindow(
