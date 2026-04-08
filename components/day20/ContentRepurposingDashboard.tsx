@@ -170,12 +170,12 @@ export function ContentRepurposingDashboard() {
         {/* Hero section */}
         {!displayOutputs && !loading && (
           <section
-            className="px-6 py-12 lg:py-16"
+            className="px-6 py-8 lg:py-10"
             style={{ background: "#0a0a0a" }}
           >
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-3xl mx-auto text-center">
               <span
-                className="block mb-4"
+                className="block mb-3"
                 style={{
                   fontFamily: "var(--font-day20-mono)",
                   fontSize: "11px",
@@ -191,24 +191,23 @@ export function ContentRepurposingDashboard() {
               <h2
                 style={{
                   fontFamily: "var(--font-day20-heading)",
-                  fontSize: "clamp(32px, 5vw, 56px)",
+                  fontSize: "clamp(28px, 4vw, 44px)",
                   fontWeight: 700,
-                  lineHeight: 1.05,
+                  lineHeight: 1.1,
                   color: "#eeeeee",
-                  marginBottom: "16px",
+                  marginBottom: "12px",
                 }}
               >
                 One source.{" "}
-                <span style={{ color: "#00FF41" }}>Seven formats.</span>
-                <br />
+                <span style={{ color: "#00FF41" }}>Seven formats.</span>{" "}
                 Zero rewrites.
               </h2>
 
               <p
-                className="mb-8 max-w-lg"
+                className="mb-5 mx-auto max-w-md"
                 style={{
                   fontFamily: "var(--font-day20-body)",
-                  fontSize: "18px",
+                  fontSize: "16px",
                   lineHeight: 1.6,
                   color: "#999",
                 }}
@@ -219,7 +218,7 @@ export function ContentRepurposingDashboard() {
 
               {/* Hero badge */}
               <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 mb-8"
+                className="inline-flex items-center gap-2 px-3 py-1.5"
                 style={{
                   fontFamily: "var(--font-day20-mono)",
                   fontSize: "11px",
@@ -237,17 +236,6 @@ export function ContentRepurposingDashboard() {
                   }}
                 />
                 PROCESSING ENGINE v1.0
-              </div>
-
-              {/* Hero terminal with subtle glow */}
-              <div
-                className="relative max-w-2xl"
-                style={{
-                  filter:
-                    "drop-shadow(0 0 60px rgba(0,255,65,0.06))",
-                }}
-              >
-                <HeroTerminal />
               </div>
             </div>
           </section>
