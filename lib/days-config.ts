@@ -29,7 +29,7 @@ export const DAYS: DayConfig[] = [
   { day: 17, slug: "day17", name: "DeliverabilityTester", tagline: "DNS-based cold email deliverability grade", status: "live", tags: ["Gemini 2.5 Flash", "DNS", "Node.js"] },
   { day: 18, slug: "day18", name: "CompanyTracker", tagline: "Daily website change monitoring with AI classification", status: "live", tags: ["Gemini 2.5 Flash", "Resend", "Cron"] },
   { day: 19, slug: "day19", name: "ContentCalendar", tagline: "30-day AI content calendar with repurposing map", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
-  { day: 20, slug: "day20", name: "Day20", tagline: "Coming soon", status: "coming-soon", tags: [] },
+  { day: 20, slug: "day20", name: "ContentRepurpose", tagline: "One source, seven formats, zero rewrites", status: "live", tags: ["Gemini 2.5 Flash", "JSON Mode"] },
   { day: 21, slug: "day21", name: "Day21", tagline: "Coming soon", status: "coming-soon", tags: [] },
   { day: 22, slug: "day22", name: "Day22", tagline: "Coming soon", status: "coming-soon", tags: [] },
   { day: 23, slug: "day23", name: "Day23", tagline: "Coming soon", status: "coming-soon", tags: [] },
