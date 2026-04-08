@@ -34,10 +34,12 @@ export default function Day20Page() {
       style={{ background: "#0a0a0a" }}
     >
       <header
-        className="flex items-center justify-between px-4 py-3"
+        className="relative flex items-center justify-center px-4 py-3"
         style={{ borderBottom: "1px solid #2a2a2a" }}
       >
-        <BackToHub label="Back to 30 in 30" />
+        <div className="absolute left-4">
+          <BackToHub label="Back to 30 in 30" />
+        </div>
         <h1
           className="text-lg"
           style={{
@@ -48,7 +50,6 @@ export default function Day20Page() {
         >
           Content<span style={{ color: "#00FF41" }}>Repurpose</span>
         </h1>
-        <div className="w-[120px]" />
       </header>
       <ContentRepurposingDashboard />
     </div>
