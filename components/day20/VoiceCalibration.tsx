@@ -17,6 +17,8 @@ export function VoiceCalibration({
 }: VoiceCalibrationProps) {
   const [open, setOpen] = useState(false);
 
+  const isActive = open || hasCalibration;
+
   return (
     <div
       style={{
@@ -51,16 +53,16 @@ export function VoiceCalibration({
             fontFamily: "var(--font-day20-mono)",
             fontSize: "10px",
             letterSpacing: "1px",
-            border: hasCalibration
+            border: isActive
               ? "1px solid rgba(0,255,65,0.2)"
               : "1px solid rgba(255,68,68,0.15)",
-            color: hasCalibration ? "#00FF41" : "#ff4444",
-            background: hasCalibration
+            color: isActive ? "#00FF41" : "#ff4444",
+            background: isActive
               ? "rgba(0,255,65,0.05)"
               : "rgba(255,68,68,0.05)",
           }}
         >
-          {hasCalibration ? "CALIBRATION: ON" : "CALIBRATION: OFF"}
+          {isActive ? "CALIBRATION: ON" : "CALIBRATION: OFF"}
         </span>
       </button>
 

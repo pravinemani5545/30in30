@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 interface SourceTextareaProps {
   value: string;
@@ -9,13 +9,6 @@ interface SourceTextareaProps {
 
 export function SourceTextarea({ value, onChange }: SourceTextareaProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.style.height = "auto";
-      ref.current.style.height = `${Math.max(200, ref.current.scrollHeight)}px`;
-    }
-  }, [value]);
 
   const wordCount = value.trim()
     ? value.trim().split(/\s+/).filter(Boolean).length
@@ -44,7 +37,7 @@ export function SourceTextarea({ value, onChange }: SourceTextareaProps) {
         placeholder="Paste your script, blog post, or transcript here..."
         style={{
           width: "100%",
-          minHeight: "200px",
+          height: "200px",
           padding: "16px",
           background: "#060606",
           border: "1px solid #2a2a2a",
@@ -55,6 +48,7 @@ export function SourceTextarea({ value, onChange }: SourceTextareaProps) {
           resize: "none",
           outline: "none",
           borderRadius: 0,
+          overflowY: "auto",
         }}
         className="placeholder:text-[#555] focus:border-[#00FF41]/30 transition-colors"
       />
