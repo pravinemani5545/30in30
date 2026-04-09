@@ -8,7 +8,7 @@ import type {
 import { FREQUENCY_HOURS } from "@/types/day31";
 import { fetchProductPage } from "./fetch";
 import { cleanHtml } from "./clean";
-import { extractPriceData } from "@/lib/day31/ai/claude";
+import { extractPriceData } from "@/lib/day31/ai/gemini";
 
 export function getNextCheckAt(frequency: CheckFrequency): string {
   const hours = FREQUENCY_HOURS[frequency] ?? 12;

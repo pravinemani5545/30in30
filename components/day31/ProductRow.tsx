@@ -33,6 +33,17 @@ function timeAgo(dateStr: string | null): string {
   return `${days}d ago`;
 }
 
+function timeUntil(dateStr: string): string {
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff <= 0) return "due now";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `in ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `in ${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `in ${days}d`;
+}
+
 function truncateUrl(url: string): string {
   try {
     const u = new URL(url);
@@ -143,7 +154,7 @@ function ProductRowInner({
         <FrequencyBadge frequency={product.frequency} />
       </td>
 
-      {/* Last Check */}
+      {/* Last Check / Next Check */}
       <td style={{ padding: "12px 16px" }}>
         <span
           style={{
@@ -154,6 +165,18 @@ function ProductRowInner({
         >
           {timeAgo(product.last_check_at)}
         </span>
+        {product.next_check_at && (
+          <div
+            style={{
+              fontFamily: "var(--font-day31-mono)",
+              fontSize: "10px",
+              color: "#444",
+              marginTop: "2px",
+            }}
+          >
+            next: {timeUntil(product.next_check_at)}
+          </div>
+        )}
       </td>
 
       {/* Actions */}

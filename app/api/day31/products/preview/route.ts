@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { fetchProductPage } from "@/lib/day31/extractor/fetch";
 import { cleanHtml } from "@/lib/day31/extractor/clean";
-import { extractPriceData } from "@/lib/day31/ai/claude";
+import { extractPriceData } from "@/lib/day31/ai/gemini";
 
 export async function GET(request: Request) {
   const supabase = await createSupabaseServer();

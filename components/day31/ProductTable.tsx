@@ -22,7 +22,7 @@ const HEADERS: { key: SortKey | null; label: string }[] = [
   { key: null, label: "DELTA" },
   { key: "availability", label: "STATUS" },
   { key: null, label: "FREQ" },
-  { key: "last_check_at", label: "LAST CHECK" },
+  { key: "last_check_at", label: "CHECKS" },
   { key: null, label: "ACTIONS" },
 ];
 

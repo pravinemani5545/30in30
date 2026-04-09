@@ -5,16 +5,20 @@ export interface FetchResult {
 
 export async function fetchProductPage(url: string): Promise<FetchResult> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
+  const timeout = setTimeout(() => controller.abort(), 15_000);
 
   try {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; PriceTracker/1.0)",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
       },
       redirect: "follow",
     });
@@ -29,7 +33,7 @@ export async function fetchProductPage(url: string): Promise<FetchResult> {
     const message =
       err instanceof Error
         ? err.name === "AbortError"
-          ? "Timeout after 10s"
+          ? "Timeout after 15s"
           : err.message
         : "Unknown fetch error";
     return { html: "", error: message };
