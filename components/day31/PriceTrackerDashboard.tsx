@@ -24,6 +24,10 @@ export function PriceTrackerDashboard() {
     null,
   );
   const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [checkStatus, setCheckStatus] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // Auth gate
   if (!authenticated) {
@@ -87,9 +91,30 @@ export function PriceTrackerDashboard() {
 
   async function handleCheck(id: string) {
     setCheckingId(id);
-    await check(id);
+    setCheckStatus(null);
+    const result = await check(id);
     setCheckingId(null);
+    if (result) {
+      if (result.current_price !== null) {
+        setCheckStatus({
+          message: `${result.product_name || "Product"}: $${Number(result.current_price).toFixed(2)}`,
+          type: "success",
+        });
+      } else {
+        setCheckStatus({
+          message: `Could not extract price from ${result.product_name || "product"}. Site may block automated access.`,
+          type: "error",
+        });
+      }
+    } else {
+      setCheckStatus({
+        message: "Check failed. Try again in 5 minutes.",
+        type: "error",
+      });
+    }
     await refresh();
+    // Auto-clear status after 5 seconds
+    setTimeout(() => setCheckStatus(null), 5000);
   }
 
   async function handleDelete(id: string) {
@@ -174,6 +199,32 @@ export function PriceTrackerDashboard() {
               [ ADD PRODUCT ]
             </button>
           </div>
+
+          {/* Check status banner */}
+          {checkStatus && (
+            <div
+              style={{
+                padding: "10px 16px",
+                marginBottom: "12px",
+                fontFamily: "var(--font-day31-mono)",
+                fontSize: "12px",
+                color:
+                  checkStatus.type === "success" ? "#00FF41" : "#ff4444",
+                backgroundColor:
+                  checkStatus.type === "success"
+                    ? "rgba(0,255,65,0.05)"
+                    : "rgba(255,68,68,0.05)",
+                border: `1px solid ${
+                  checkStatus.type === "success"
+                    ? "rgba(0,255,65,0.2)"
+                    : "rgba(255,68,68,0.15)"
+                }`,
+              }}
+            >
+              {checkStatus.type === "success" ? "\u2713" : "\u2717"}{" "}
+              {checkStatus.message}
+            </div>
+          )}
 
           <ProductTable
             products={products}

@@ -47,7 +47,8 @@ function timeUntil(dateStr: string): string {
 function truncateUrl(url: string): string {
   try {
     const u = new URL(url);
-    const path = u.pathname.length > 30 ? u.pathname.slice(0, 30) + "..." : u.pathname;
+    const path =
+      u.pathname.length > 30 ? u.pathname.slice(0, 30) + "..." : u.pathname;
     return u.hostname + path;
   } catch {
     return url.slice(0, 50);
@@ -63,15 +64,20 @@ function ProductRowInner({
   checkingId,
 }: ProductRowProps) {
   const isChecking = checkingId === product.id;
+  const hasFailed = product.consecutive_failures > 0;
+  const isDeactivated = !product.is_active;
 
   return (
     <tr
       style={{
         borderBottom: "1px solid #2a2a2a",
-        borderLeft: product.is_below_target
-          ? "2px solid #00FF41"
-          : "2px solid transparent",
+        borderLeft: isDeactivated
+          ? "2px solid #ff4444"
+          : product.is_below_target
+            ? "2px solid #00FF41"
+            : "2px solid transparent",
         transition: "background 0.2s",
+        opacity: isDeactivated ? 0.5 : 1,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = "#161616";
@@ -110,6 +116,32 @@ function ProductRowInner({
         >
           {truncateUrl(product.url)}
         </div>
+        {/* Error status */}
+        {isDeactivated && (
+          <div
+            style={{
+              fontFamily: "var(--font-day31-mono)",
+              fontSize: "10px",
+              color: "#ff4444",
+              marginTop: "4px",
+            }}
+          >
+            PAUSED — 5 consecutive failures
+          </div>
+        )}
+        {!isDeactivated && hasFailed && (
+          <div
+            style={{
+              fontFamily: "var(--font-day31-mono)",
+              fontSize: "10px",
+              color: "#FFB800",
+              marginTop: "4px",
+            }}
+          >
+            {product.consecutive_failures} failed check
+            {product.consecutive_failures > 1 ? "s" : ""}
+          </div>
+        )}
       </td>
 
       {/* Current Price */}
@@ -190,13 +222,50 @@ function ProductRowInner({
               fontFamily: "var(--font-day31-mono)",
               fontSize: "11px",
               color: isChecking ? "#555" : "#00FF41",
-              backgroundColor: "transparent",
+              backgroundColor: isChecking
+                ? "rgba(0,255,65,0.03)"
+                : "transparent",
               border: `1px solid ${isChecking ? "#2a2a2a" : "rgba(0,255,65,0.2)"}`,
               padding: "4px 8px",
               cursor: isChecking ? "not-allowed" : "pointer",
+              minWidth: "56px",
+              textAlign: "center",
+              position: "relative",
             }}
           >
-            {isChecking ? "..." : "CHECK"}
+            {isChecking ? (
+              <span className="inline-flex items-center gap-1">
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "4px",
+                    height: "4px",
+                    backgroundColor: "#00FF41",
+                    animation: "pulse-dot 1s infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "4px",
+                    height: "4px",
+                    backgroundColor: "#00FF41",
+                    animation: "pulse-dot 1s infinite 0.2s",
+                  }}
+                />
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "4px",
+                    height: "4px",
+                    backgroundColor: "#00FF41",
+                    animation: "pulse-dot 1s infinite 0.4s",
+                  }}
+                />
+              </span>
+            ) : (
+              "CHECK"
+            )}
           </button>
           <button
             onClick={() => onHistory(product)}
