@@ -57,7 +57,7 @@ export async function extractPriceData(
       model: getModelId(),
       generationConfig: {
         responseMimeType: "application/json",
-        maxOutputTokens: 256,
+        maxOutputTokens: 1024,
       },
       systemInstruction: SYSTEM_PROMPT,
     });
@@ -67,12 +67,42 @@ export async function extractPriceData(
     );
 
     const raw = result.response.text();
-    const clean = raw
-      .replace(/^```json\n?/, "")
-      .replace(/\n?```$/, "")
-      .trim();
 
-    const parsed = JSON.parse(clean);
+    // Extract JSON from response — Gemini may wrap it in markdown or prefix with text
+    let jsonStr = raw.trim();
+    // Strip markdown code fences
+    jsonStr = jsonStr.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+    // Find first { and last } to extract JSON object
+    const firstBrace = jsonStr.indexOf("{");
+    const lastBrace = jsonStr.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    }
+
+    const parsed = JSON.parse(jsonStr);
+
+    // Normalize availability — Gemini sometimes returns "In Stock" instead of "in_stock"
+    if (typeof parsed.availability === "string") {
+      const av = parsed.availability.toLowerCase().trim();
+      if (av === "in stock" || av === "in_stock" || av === "instock") {
+        parsed.availability = "in_stock";
+      } else if (
+        av === "out of stock" ||
+        av === "out_of_stock" ||
+        av === "outofstock" ||
+        av === "sold out" ||
+        av === "sold_out"
+      ) {
+        parsed.availability = "out_of_stock";
+      } else {
+        parsed.availability = "unknown";
+      }
+    }
+
+    // Normalize currency — accept "$" as "USD"
+    if (parsed.currency === "$") parsed.currency = "USD";
+    if (parsed.currency === "C$" || parsed.currency === "CAD") parsed.currency = "CAD";
+
     const validated = extractionResultSchema.parse(parsed);
     return validated;
   } catch {

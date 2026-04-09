@@ -3,6 +3,8 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { processProductCheck } from "@/lib/day31/extractor/process";
 import type { TrackedProduct } from "@/types/day31";
 
+export const maxDuration = 60;
+
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
