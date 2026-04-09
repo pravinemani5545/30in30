@@ -8,6 +8,10 @@
     {
       "path": "/api/day18/cron/track",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/day31/cron/check",
+      "schedule": "0 * * * *"
     }
   ]
 }

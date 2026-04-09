@@ -12,6 +12,7 @@ const serverSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().optional(),
+  CLAUDE_MODEL: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
 
   // Day 2 — FounderCRM

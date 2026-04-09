@@ -40,4 +40,5 @@ export const DAYS: DayConfig[] = [
   { day: 28, slug: "day28", name: "Day28", tagline: "Coming soon", status: "coming-soon", tags: [] },
   { day: 29, slug: "day29", name: "Day29", tagline: "Coming soon", status: "coming-soon", tags: [] },
   { day: 30, slug: "day30", name: "Day30", tagline: "Coming soon", status: "coming-soon", tags: [] },
+  { day: 31, slug: "day31", name: "PriceTracker", tagline: "Dead-simple price monitoring with Claude extraction", status: "live", tags: ["Claude", "Resend", "Cron", "recharts"] },
 ];
