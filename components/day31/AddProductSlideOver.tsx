@@ -27,6 +27,7 @@ export function AddProductSlideOver({
   const [notifyBackInStock, setNotifyBackInStock] = useState(true);
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
   const [previewDone, setPreviewDone] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   // Auto-preview on URL paste
   useEffect(() => {
@@ -34,6 +35,7 @@ export function AddProductSlideOver({
     if (!url.startsWith("http")) return;
 
     const timeout = setTimeout(async () => {
+      setPreviewError(null);
       const result = await preview(url);
       if (result) {
         if (result.productName && !productName) {
@@ -42,6 +44,10 @@ export function AddProductSlideOver({
         if (result.currentPrice !== null) {
           setPreviewPrice(result.currentPrice);
         }
+        setPreviewDone(true);
+      } else {
+        // Preview failed but user can still add manually
+        setPreviewError("Could not auto-detect price. Enter details manually.");
         setPreviewDone(true);
       }
     }, 500);
@@ -178,6 +184,18 @@ export function AddProductSlideOver({
                 }}
               >
                 current price: ${previewPrice.toFixed(2)}
+              </div>
+            )}
+            {previewDone && previewPrice === null && previewError && (
+              <div
+                style={{
+                  fontFamily: "var(--font-day31-mono)",
+                  fontSize: "11px",
+                  color: "#FFB800",
+                  marginTop: "4px",
+                }}
+              >
+                {previewError}
               </div>
             )}
           </div>

@@ -23,6 +23,10 @@ export async function fetchProductPage(url: string): Promise<FetchResult> {
       redirect: "follow",
     });
 
+    if (res.status === 403) {
+      return { html: "", error: "Site blocked access (403). You can still add this product manually." };
+    }
+
     if (!res.ok) {
       return { html: "", error: `HTTP ${res.status}` };
     }
