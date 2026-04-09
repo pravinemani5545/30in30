@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { CheckFrequency } from "@/types/day31";
 import { useAddProduct } from "@/hooks/day31/useAddProduct";
 
 interface AddProductSlideOverProps {
@@ -9,8 +8,6 @@ interface AddProductSlideOverProps {
   onClose: () => void;
   onAdded: () => void;
 }
-
-const FREQUENCIES: CheckFrequency[] = ["1x", "2x", "4x", "6x"];
 
 export function AddProductSlideOver({
   open,
@@ -22,7 +19,6 @@ export function AddProductSlideOver({
   const [url, setUrl] = useState("");
   const [productName, setProductName] = useState("");
   const [targetPrice, setTargetPrice] = useState("");
-  const [frequency, setFrequency] = useState<CheckFrequency>("2x");
   const [notifyPriceDrop, setNotifyPriceDrop] = useState(true);
   const [notifyBackInStock, setNotifyBackInStock] = useState(true);
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
@@ -65,7 +61,7 @@ export function AddProductSlideOver({
       url,
       productName: productName || undefined,
       targetPrice: price,
-      frequency,
+      frequency: "1x",
       notifyPriceDrop,
       notifyBackInStock,
     });
@@ -74,7 +70,6 @@ export function AddProductSlideOver({
       setUrl("");
       setProductName("");
       setTargetPrice("");
-      setFrequency("2x");
       setPreviewPrice(null);
       setPreviewDone(false);
       onAdded();
@@ -267,7 +262,7 @@ export function AddProductSlideOver({
             />
           </div>
 
-          {/* Frequency */}
+          {/* Frequency info */}
           <div>
             <label
               style={{
@@ -279,29 +274,29 @@ export function AddProductSlideOver({
                 marginBottom: "6px",
               }}
             >
-              CHECK FREQUENCY
+              AUTO-CHECK SCHEDULE
             </label>
-            <div className="flex gap-2">
-              {FREQUENCIES.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setFrequency(f)}
-                  style={{
-                    fontFamily: "var(--font-day31-mono)",
-                    fontSize: "12px",
-                    padding: "8px 16px",
-                    border: `1px solid ${frequency === f ? "#00FF41" : "#2a2a2a"}`,
-                    backgroundColor:
-                      frequency === f ? "rgba(0,255,65,0.08)" : "transparent",
-                    color: frequency === f ? "#00FF41" : "#555",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {f}/day
-                </button>
-              ))}
+            <div
+              style={{
+                fontFamily: "var(--font-day31-mono)",
+                fontSize: "12px",
+                padding: "10px 14px",
+                border: "1px solid #2a2a2a",
+                backgroundColor: "rgba(0,255,65,0.03)",
+                color: "#999",
+              }}
+            >
+              <span style={{ color: "#00FF41" }}>1x / day</span> at 9:00 AM
+              UTC
+              <div
+                style={{
+                  fontSize: "10px",
+                  color: "#555",
+                  marginTop: "4px",
+                }}
+              >
+                You can also check manually anytime using the CHECK button.
+              </div>
             </div>
           </div>
 

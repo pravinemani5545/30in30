@@ -21,7 +21,6 @@ const HEADERS: { key: SortKey | null; label: string }[] = [
   { key: "current_price", label: "PRICE" },
   { key: null, label: "DELTA" },
   { key: "availability", label: "STATUS" },
-  { key: null, label: "FREQ" },
   { key: "last_check_at", label: "CHECKS" },
   { key: null, label: "ACTIONS" },
 ];

@@ -4,7 +4,6 @@ import { memo } from "react";
 import type { TrackedProduct } from "@/types/day31";
 import { AvailabilityBadge } from "./AvailabilityBadge";
 import { PriceDelta } from "./PriceDelta";
-import { FrequencyBadge } from "./FrequencyBadge";
 
 interface ProductRowProps {
   product: TrackedProduct;
@@ -179,11 +178,6 @@ function ProductRowInner({
       {/* Status */}
       <td style={{ padding: "12px 16px" }}>
         <AvailabilityBadge status={product.availability} />
-      </td>
-
-      {/* Frequency */}
-      <td style={{ padding: "12px 16px" }}>
-        <FrequencyBadge frequency={product.frequency} />
       </td>
 
       {/* Last Check / Next Check */}

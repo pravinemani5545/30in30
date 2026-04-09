@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { TrackedProduct, CheckFrequency } from "@/types/day31";
+import type { TrackedProduct } from "@/types/day31";
 import { useEditProduct } from "@/hooks/day31/useEditProduct";
 
 interface EditProductModalProps {
@@ -9,8 +9,6 @@ interface EditProductModalProps {
   onClose: () => void;
   onSaved: () => void;
 }
-
-const FREQUENCIES: CheckFrequency[] = ["1x", "2x", "4x", "6x"];
 
 export function EditProductModal({
   product,
@@ -21,7 +19,6 @@ export function EditProductModal({
   const [targetPrice, setTargetPrice] = useState(
     product.target_price.toString(),
   );
-  const [frequency, setFrequency] = useState<CheckFrequency>(product.frequency);
   const [notifyPriceDrop, setNotifyPriceDrop] = useState(
     product.notify_price_drop,
   );
@@ -37,7 +34,7 @@ export function EditProductModal({
 
     const result = await edit(product.id, {
       targetPrice: price,
-      frequency,
+      frequency: "1x",
       notifyPriceDrop,
       notifyBackInStock,
       productName: productName || undefined,
@@ -164,28 +161,28 @@ export function EditProductModal({
                 marginBottom: "6px",
               }}
             >
-              FREQUENCY
+              AUTO-CHECK SCHEDULE
             </label>
-            <div className="flex gap-2">
-              {FREQUENCIES.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setFrequency(f)}
-                  style={{
-                    fontFamily: "var(--font-day31-mono)",
-                    fontSize: "12px",
-                    padding: "6px 12px",
-                    border: `1px solid ${frequency === f ? "#00FF41" : "#2a2a2a"}`,
-                    backgroundColor:
-                      frequency === f ? "rgba(0,255,65,0.08)" : "transparent",
-                    color: frequency === f ? "#00FF41" : "#555",
-                    cursor: "pointer",
-                  }}
-                >
-                  {f}/day
-                </button>
-              ))}
+            <div
+              style={{
+                fontFamily: "var(--font-day31-mono)",
+                fontSize: "12px",
+                padding: "10px 14px",
+                border: "1px solid #2a2a2a",
+                backgroundColor: "rgba(0,255,65,0.03)",
+                color: "#999",
+              }}
+            >
+              <span style={{ color: "#00FF41" }}>1x / day</span> at 9:00 AM UTC
+              <div
+                style={{
+                  fontSize: "10px",
+                  color: "#555",
+                  marginTop: "4px",
+                }}
+              >
+                You can also check manually anytime using the CHECK button.
+              </div>
             </div>
           </div>
 
