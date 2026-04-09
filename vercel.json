@@ -11,7 +11,7 @@
     },
     {
       "path": "/api/day31/cron/check",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
